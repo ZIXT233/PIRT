@@ -1,0 +1,34 @@
+{
+  "ubuntu": {
+    "version": "24.04.4-pirt-1",
+    "file": "ubuntu-base-24.04.4-base-arm64.blob",
+    "format": "tar.gz",
+    "size": 371447879,
+    "sha256": "466b6ee98dc99d2fb218bd76574011f45321f00c64d534b4457d4df481e27657",
+    "source": "https://cdimages.ubuntu.com/ubuntu-base/releases/24.04/release/"
+  },
+  "toolchain": {
+    "git": "2.43.0",
+    "python": "3.12.3",
+    "node": "22.20.0",
+    "pi": "0.84.1",
+    "piPackage": "@earendil-works/pi-coding-agent"
+  },
+  "graphics": {
+    "tigervnc": "1.13.1",
+    "xfce4": "4.18",
+    "novnc": "1.3.0",
+    "websockify": "0.10.0"
+  },
+  "proot": {
+    "version": "5.1.107.89",
+    "architecture": "aarch64",
+    "source": "https://packages.termux.dev/apt/termux-main/",
+    "files": {
+      "libproot_exec.so": "6ffdff4117c571d07aa7e6f940001f050c97adb920660c984b72d4a537b4f60a",
+      "libproot_loader.so": "44ef39c1e1a18c09f6e4c4b5d6f8bba82d30596598bd155ec162d05c5122ff04",
+      "libandroid-shmem.so": "84475798e07c8174dbbfaec70a827fdb02f19ffa69a589380c13e7507fd0e731",
+      "libtalloc.so": "3c9b207c0a6ea2896b7523e03f55d9ab0d9e88baa115d4c32b84058ff4246fbb"
+    }
+  }
+}
