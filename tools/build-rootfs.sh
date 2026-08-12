@@ -75,8 +75,16 @@ fetch() {
   fi
 }
 
+# On aarch64 hosts (e.g. ARM Mac Docker linux/arm64), chroot natively — no qemu.
+NATIVE_AARCH64=0
+[[ "$(uname -m)" == "aarch64" ]] && NATIVE_AARCH64=1
+
 run_chroot() {
-  sudo chroot "$ROOTFS" /usr/bin/qemu-aarch64-static "$@"
+  if [[ "$NATIVE_AARCH64" -eq 1 ]]; then
+    sudo chroot "$ROOTFS" "$@"
+  else
+    sudo chroot "$ROOTFS" /usr/bin/qemu-aarch64-static "$@"
+  fi
 }
 
 setup_host() {
@@ -85,8 +93,13 @@ setup_host() {
   need_cmd sudo
   export DEBIAN_FRONTEND=noninteractive
   sudo apt-get update -qq
-  sudo apt-get install -y -qq qemu-user-static binfmt-support ca-certificates >/dev/null
-  sudo update-binfmts --enable qemu-aarch64 >/dev/null 2>&1 || true
+  if [[ "$NATIVE_AARCH64" -eq 1 ]]; then
+    sudo apt-get install -y -qq ca-certificates >/dev/null
+    log "native aarch64 host — skipping qemu-user-static"
+  else
+    sudo apt-get install -y -qq qemu-user-static binfmt-support ca-certificates >/dev/null
+    sudo update-binfmts --enable qemu-aarch64 >/dev/null 2>&1 || true
+  fi
 }
 
 mount_chroot() {
@@ -118,7 +131,9 @@ main() {
   tar -xzf "$base" -C "$ROOTFS"
   test -x "$ROOTFS/bin/bash" || { echo "extracted rootfs is incomplete" >&2; exit 1; }
 
-  sudo cp /usr/bin/qemu-aarch64-static "$ROOTFS/usr/bin/"
+  if [[ "$NATIVE_AARCH64" -ne 1 ]]; then
+    sudo cp /usr/bin/qemu-aarch64-static "$ROOTFS/usr/bin/"
+  fi
   mount_chroot
   trap umount_chroot EXIT
 
@@ -127,6 +142,14 @@ main() {
 deb ${UBUNTU_PORTS} ${UBUNTU_CODENAME} main restricted universe multiverse
 deb ${UBUNTU_PORTS} ${UBUNTU_CODENAME}-updates main restricted universe multiverse
 deb ${UBUNTU_PORTS} ${UBUNTU_CODENAME}-security main restricted universe multiverse
+EOF
+  # Skip Translation-* indexes (tens–hundreds of MB) and recommends by default.
+  sudo mkdir -p "$ROOTFS/etc/apt/apt.conf.d"
+  cat <<'EOF' | sudo tee "$ROOTFS/etc/apt/apt.conf.d/99pirt-build" >/dev/null
+Acquire::Languages "none";
+APT::Get::Install-Recommends "false";
+APT::Get::Install-Suggests "false";
+Acquire::http::Pipeline-Depth "10";
 EOF
 
   log "install pinned system packages (Depends only, no Recommends)"

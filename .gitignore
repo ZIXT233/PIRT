@@ -17,7 +17,7 @@ local.properties
 /tools/node_modules/
 /tools/.rootfs-cache/
 /.idea/
-# Rootfs blob is built on Ubuntu; see docs/rootfs-build.zh-CN.md
+# Rootfs blob exceeds Gitee 100MB limit; keep local / copy via USB. See docs/rootfs-build.zh-CN.md
 *.blob
 /references/
 /tools/build_graphics_rootfs.mjs

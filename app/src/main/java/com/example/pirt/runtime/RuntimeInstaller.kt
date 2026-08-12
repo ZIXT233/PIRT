@@ -29,9 +29,8 @@ object RuntimeArtifacts {
     val ubuntuArm64 = RuntimeArtifact(
         version = "24.04.4-pirt-1",
         url = "https://cdimages.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.4-base-arm64.tar.gz",
-        // Placeholder until tools/build-rootfs.sh output is copied into assets; see docs/rootfs-build.zh-CN.md
-        sha256 = "466b6ee98dc99d2fb218bd76574011f45321f00c64d534b4457d4df481e27657",
-        size = 371_447_879,
+        sha256 = "455e1a02af0496b4389afcae3f2d78acf132fba42a0c06bae6cfd00dbf0ed5e2",
+        size = 326_603_541,
         assetPath = "runtime/ubuntu-base-24.04.4-base-arm64.blob",
     )
 }
