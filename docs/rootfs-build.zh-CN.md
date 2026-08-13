@@ -1,6 +1,8 @@
 # PIRT Rootfs 构建指南
 
-PIRT 在 APK 里打包一个 **arm64 Ubuntu rootfs**（`tar.gz` blob）。该 blob 必须能从公开源复现，禁止用手工维护的二进制链或 Windows tar 拼接。
+PIRT 在 APK 里打包一个 **arm64 Ubuntu rootfs**（`tar.gz` blob）。本文说明如何从公开源重新构建它，不采用手工维护的二进制链或 Windows tar 拼接。
+
+> 当前提供的是可重复执行的构建流程，还不是字节级可复现构建。Ubuntu Base 和 Node.js 已锁定 SHA-256，Pi 锁定了顶层包版本；但 Ubuntu apt 依赖仍取构建时仓库状态，npm 传递依赖没有由仓库内 lockfile 锁定，归档元数据也未归一化。因此后续重建可能得到不同的 SHA-256。
 
 ## 构建产物
 
@@ -23,8 +25,8 @@ PIRT 在 APK 里打包一个 **arm64 Ubuntu rootfs**（`tar.gz` blob）。该 bl
 
 ```bash
 # 1. 克隆仓库
-git clone https://gitee.com/zixt/pirt.git
-cd pirt
+git clone https://github.com/ZIXT233/PIRT.git
+cd PIRT
 
 # 2. 构建（约 15–30 分钟，视网络而定）
 chmod +x tools/build-rootfs.sh
@@ -58,7 +60,7 @@ echo "version=$VERSION size=$SIZE sha256=$SHA256"
    - `ubuntu.version` → `tools/rootfs.env` 里的 `PIRT_ROOTFS_VERSION`
    - `ubuntu.size` / `ubuntu.sha256` → 上面输出的值
 
-2. **`app/src/main/java/com/example/pirt/runtime/RuntimeInstaller.kt`**
+2. **`app/src/main/java/io/github/zixt233/pirt/runtime/RuntimeInstaller.kt`**
    - `RuntimeArtifacts.ubuntuArm64` 的 `version`、`size`、`sha256` 同步
 
 提交示例：
@@ -66,14 +68,14 @@ echo "version=$VERSION size=$SIZE sha256=$SHA256"
 ```bash
 git add app/src/main/assets/runtime/ubuntu-base-24.04.4-base-arm64.blob \
         app/src/main/assets/runtime/manifest.json \
-        app/src/main/java/com/example/pirt/runtime/RuntimeInstaller.kt
+        app/src/main/java/io/github/zixt233/pirt/runtime/RuntimeInstaller.kt
 git commit -m "build: rootfs ${VERSION} arm64 blob"
 git push
 ```
 
 ## 构建内容（pinned）
 
-版本锁在 `tools/rootfs.env`：
+顶层版本锁在 `tools/rootfs.env`：
 
 - Ubuntu Base 24.04.4 arm64（官方 cdimage，SHA256 校验）
 - apt：`xfce4`、`tigervnc-standalone-server`、`novnc`、`websockify`、`git` 等（`--no-install-recommends`）

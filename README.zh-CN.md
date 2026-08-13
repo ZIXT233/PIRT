@@ -8,7 +8,9 @@
 
 PIRT 的 Shell、本地 XFCE 图形桌面和 Android 系统文件管理器访问的是同一个工作区。你可以直接用手机应用编辑、复制或分享这些文件，不需要先从远程电脑下载。
 
-![PIRT 在 Android 手机上识别其本地 Ubuntu 环境](./screenshot.png)
+<p align="center">
+  <img src="./screenshot.png" width="360" alt="PIRT 在 Android 手机上识别其本地 Ubuntu 环境">
+</p>
 
 ## 它具体做了什么
 
@@ -34,9 +36,11 @@ PIRT 的 Shell、本地 XFCE 图形桌面和 Android 系统文件管理器访问
 - 服务商登录、OpenAI 兼容 API 和模型选择
 - AI 回复完成通知和通知栏输入
 
-![PIRT 与 aVNC 在 Android 分屏模式下同时运行](./screenshot-desktop.jpg)
-
-*PIRT 与 aVNC 分屏运行；同一桌面也可以通过浏览器 noVNC 打开。*
+<p align="center">
+  <img src="./screenshot-desktop.jpg" width="360" alt="PIRT 与 aVNC 在 Android 分屏模式下同时运行">
+  <br>
+  <sub>PIRT 与 aVNC 分屏运行；同一桌面也可以通过浏览器 noVNC 打开。</sub>
+</p>
 
 ## 运行要求
 

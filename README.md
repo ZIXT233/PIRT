@@ -8,7 +8,9 @@ Most mobile agent apps still need a remote computer or cloud workspace. PIRT put
 
 The same workspace is available to PIRT's shell, local XFCE desktop, and Android's system file manager. You can edit, copy or share the files with ordinary phone apps without first moving them out of a remote machine.
 
-![PIRT detecting its local Ubuntu environment on an Android phone](./screenshot.png)
+<p align="center">
+  <img src="./screenshot.png" width="360" alt="PIRT detecting its local Ubuntu environment on an Android phone">
+</p>
 
 ## What it does
 
@@ -34,9 +36,11 @@ Provide the Agent with the pairing code and ports shown by Android Wireless debu
 - Provider sign-in, OpenAI-compatible APIs and model selection
 - Completion notifications and notification-bar input
 
-![PIRT and aVNC running side by side in Android split-screen mode](./screenshot-desktop.jpg)
-
-*PIRT and aVNC in Android split-screen mode. The same desktop can also be opened in a browser through noVNC.*
+<p align="center">
+  <img src="./screenshot-desktop.jpg" width="360" alt="PIRT and aVNC running side by side in Android split-screen mode">
+  <br>
+  <sub>PIRT and aVNC in Android split-screen mode. The same desktop can also be opened in a browser through noVNC.</sub>
+</p>
 
 ## Requirements
 

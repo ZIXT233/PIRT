@@ -1,6 +1,8 @@
 # Rootfs build
 
-PIRT ships an arm64 Ubuntu rootfs as a single `tar.gz` blob inside the APK assets. The blob must be **reproducible from public sources**, not a hand-maintained binary chain.
+PIRT ships an arm64 Ubuntu rootfs as a single `tar.gz` blob inside the APK assets. This document describes how to rebuild it from public sources instead of maintaining a hand-modified binary chain.
+
+> This is currently a repeatable build recipe, not a byte-for-byte reproducible build. Ubuntu Base and Node.js are checksum-pinned, and the Pi package version is pinned. Ubuntu apt dependencies still come from the current repository state, npm transitive dependencies are not locked by a committed lockfile, and archive metadata is not normalized. A later rebuild can therefore produce a different SHA-256.
 
 ## What gets built
 
@@ -12,7 +14,7 @@ Starting from the official [Ubuntu Base 24.04 arm64](https://cdimages.ubuntu.com
 - Node.js (pinned tarball from nodejs.org)
 - Pi coding agent (`@earendil-works/pi-coding-agent`, pinned version)
 
-Pinned versions live in `tools/rootfs.env`. Android-side bridge scripts (`pirt-control-bridge.mjs`) are **not** baked into the blob; `RuntimeInstaller` copies them from app assets during install.
+Pinned top-level versions live in `tools/rootfs.env`. Android-side bridge scripts (`pirt-control-bridge.mjs`) are **not** baked into the blob; `RuntimeInstaller` copies them from app assets during install.
 
 ## Host requirements
 
@@ -30,7 +32,7 @@ tools/build-rootfs.sh build/pirt-rootfs-arm64.tar.gz
 The script prints JSON with `size` and `sha256`. Update:
 
 1. `app/src/main/assets/runtime/manifest.json` (`ubuntu.version`, `size`, `sha256`)
-2. `RuntimeInstaller.kt` (`RuntimeArtifacts.ubuntuArm64`)
+2. `app/src/main/java/io/github/zixt233/pirt/runtime/RuntimeInstaller.kt` (`RuntimeArtifacts.ubuntuArm64`)
 3. Copy/rename the artifact to `app/src/main/assets/runtime/ubuntu-base-24.04.4-base-arm64.blob`
 
 ## Remote build example
