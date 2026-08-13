@@ -93,6 +93,7 @@ class ChatViewModel(
     fun abort() = runtime.manager.value?.abort(session.runtimeKey)
     fun requestModels() = runtime.manager.value?.requestModels(session.runtimeKey)
     fun requestCommands() = runtime.manager.value?.requestCommands(session.runtimeKey)
+    fun reloadRuntime() = runtime.manager.value?.reloadRuntime(session.runtimeKey)
     fun requestThinkingLevels() = runtime.manager.value?.requestThinkingLevels(session.runtimeKey)
     fun requestStats() = runtime.manager.value?.requestStats(session.runtimeKey)
     fun respondExtensionUi(

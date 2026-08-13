@@ -335,6 +335,11 @@ sealed class PiRequest<T>(
         }
     }
 
+    data object ReloadRuntime : PiRequest<Unit>("reload_runtime", 120_000L) {
+        override fun payload() = base()
+        override fun decode(data: JSONObject?) = Unit
+    }
+
     data object Compact : PiRequest<Unit>("compact", 120_000L) {
         override fun payload() = base()
         override fun decode(data: JSONObject?) = Unit

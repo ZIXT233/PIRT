@@ -17,6 +17,11 @@ class PiRpcProtocolTest {
     }
 
     @Test
+    fun runtimeReloadUsesNativeSessionOperation() {
+        assertEquals("reload_runtime", PiRequest.ReloadRuntime.command)
+    }
+
+    @Test
     fun modelSwitchDecodesClampedThinkingState() {
         val selection = PiRequest.SetModel("deepseek", "deepseek-v4-pro").decode(JSONObject(
             """{

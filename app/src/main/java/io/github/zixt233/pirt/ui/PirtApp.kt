@@ -237,7 +237,6 @@ fun PirtApp() {
         "FILES", "TERMINAL" -> Page.CHAT
         else -> runCatching { Page.valueOf(pageName) }.getOrDefault(Page.CHAT)
     }
-    var requestPiCommands by remember { mutableStateOf<(() -> Unit)?>(null) }
     val session = when (sessionId) {
         newConversation.runtimeKey -> newConversation
         else -> pendingConversations.firstOrNull { it.session.runtimeKey == sessionId }?.session
@@ -453,19 +452,7 @@ fun PirtApp() {
                                 }
                             }
                         },
-                        actions = {
-                            if (page == Page.CHAT && session != null) {
-                                IconButton(
-                                    onClick = { requestPiCommands?.invoke() },
-                                    enabled = requestPiCommands != null,
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Code,
-                                        contentDescription = language.text("PIRT 工具箱", "PIRT tools"),
-                                    )
-                                }
-                            }
-                        },
+                        actions = {},
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
@@ -480,7 +467,6 @@ fun PirtApp() {
                                 session,
                                 appViewModel.runtimeConnection,
                                 appViewModel.workspace,
-                                onRegisterPiCommands = { requestPiCommands = it },
                                 composerText = if (isNewConversation) newConversationText else conversationDrafts[session.runtimeKey].orEmpty(),
                                 onComposerTextChange = { value ->
                                     if (isNewConversation) {
@@ -1230,7 +1216,6 @@ private fun ConversationPage(
     onPiSessionId: (String) -> Unit = {},
     onPromptSubmitted: (String, String?) -> Unit = { _, _ -> },
     onSessionReplaced: (PiBranchResult) -> Unit = {},
-    onRegisterPiCommands: ((() -> Unit)?) -> Unit = {},
 ) {
     val context = LocalContext.current
     val language = LocalAppLanguage.current
@@ -1311,13 +1296,6 @@ private fun ConversationPage(
         val provider = authState.selectedProvider ?: return@LaunchedEffect
         val modelId = authState.selectedModel ?: return@LaunchedEffect
         chat.setModel(provider, modelId)
-    }
-    DisposableEffect(session.runtimeKey, chat) {
-        onRegisterPiCommands {
-            showPiControls = true
-            chat.requestCommands()
-        }
-        onDispose { onRegisterPiCommands(null) }
     }
     LaunchedEffect(ui.sessionId) {
         ui.sessionId?.let(onPiSessionId)
@@ -1423,6 +1401,10 @@ private fun ConversationPage(
                         .padding(horizontal = 16.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    ComposerShortcut("/") {
+                        showPiControls = true
+                        chat.requestCommands()
+                    }
                     val modelLabel = when {
                         !ui.agentLoaded -> language.text("模型：加载中…", "Model: loading…")
                         modelUnset && authState.selectedModel != null ->
@@ -1551,6 +1533,10 @@ private fun ConversationPage(
             canExecuteCommand = ui.ready && !agentBusy,
             onExecuteCommand = {
                 chat.executePiCommand(it)
+                showPiControls = false
+            },
+            onReloadRuntime = {
+                chat.reloadRuntime()
                 showPiControls = false
             },
             onClone = {
@@ -2077,6 +2063,7 @@ private fun PiControlsDialog(
     canExport: Boolean,
     canExecuteCommand: Boolean,
     onExecuteCommand: (String) -> Unit,
+    onReloadRuntime: () -> Unit,
     onClone: () -> Unit,
     onExport: () -> Unit,
     onToggleAutoCompaction: () -> Unit,
@@ -2090,13 +2077,23 @@ private fun PiControlsDialog(
     val workflows = commands.filter { it.source == "skill" }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(language.text("PIRT 工具箱", "PIRT tools")) },
+        title = { Text(language.text("PIRT 命令", "PIRT commands")) },
         text = {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth().height(430.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 item { Text(language.text("会话控制", "Conversation controls"), fontWeight = FontWeight.SemiBold) }
+                item {
+                    TextButton(
+                        onClick = onReloadRuntime,
+                        enabled = canExecuteCommand,
+                    ) {
+                        Icon(Icons.Outlined.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(language.text("重新加载运行资源", "Reload runtime resources"))
+                    }
+                }
                 item { TextButton(onClick = onClone, enabled = canClone) { Text(language.text("克隆当前会话", "Clone current conversation")) } }
                 item {
                     TextButton(onClick = onExport, enabled = canExport) {

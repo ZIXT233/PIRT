@@ -35,6 +35,8 @@ All conversations work in the same shared /workspace directory. When starting a 
 
 PIRT's local graphical desktop uses the fixed X display :100. For tasks involving desktop inspection, screenshots, or GUI interaction, prefer DISPLAY=:100. If display :100 is not available or cannot be detected, ask the user to start the Desktop service from the PIRT app sidebar.
 
+If a user message begins with "/" and clearly appears to be an attempt to run a Pi command, do not claim to execute it as chat text. Briefly tell the user to use the leftmost "/" command entry above the message box. Do not apply this instruction to ordinary prose, paths, URLs, or other non-command uses of slashes.
+
 The following system prompt is provided by the underlying Pi agent framework. Treat it as the operational instructions for working inside PIRT:`;
 
 function pirtEnvironmentExtension(pi) {
@@ -707,6 +709,12 @@ async function handleAgent(command) {
       for (const item of session.promptTemplates) commands.push({ name: item.name, description: item.description, source: "prompt" });
       for (const item of session.resourceLoader.getSkills().skills) commands.push({ name: `skill:${item.name}`, description: item.description, source: "skill" });
       reply(command, true, { commands }); return true;
+    }
+    case "reload_runtime": {
+      if (session.isStreaming || session.isCompacting) throw new Error("AI 正在运行，暂时不能重新加载运行资源");
+      await session.reload({ beforeSessionStart: async () => bindRuntime(entry, session) });
+      reply(command, true, {});
+      return true;
     }
     case "extension_ui_response": {
       const pending = pendingExtensionUi.get(command.requestId);

@@ -74,6 +74,7 @@ class PiSessionManager(
     @Synchronized fun abort(sessionId: String) = controller(sessionId)?.abort()
     @Synchronized fun requestModels(sessionId: String) = controller(sessionId)?.requestModels()
     @Synchronized fun requestCommands(sessionId: String) = controller(sessionId)?.requestCommands()
+    @Synchronized fun reloadRuntime(sessionId: String) = controller(sessionId)?.reloadRuntime()
     @Synchronized fun requestThinkingLevels(sessionId: String) = controller(sessionId)?.requestThinkingLevels()
     @Synchronized fun requestStats(sessionId: String) = controller(sessionId)?.requestStats()
     @Synchronized fun respondExtensionUi(

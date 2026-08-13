@@ -103,6 +103,15 @@ internal class PiSessionController(
         result.onSuccess { values -> update { it.copy(commands = values, commandsRevision = it.commandsRevision + 1, failure = null) } }
             .onFailure(::requestFailed)
     }
+    fun reloadRuntime() {
+        check(!busy()) { "AI 正在运行，暂时不能重新加载运行资源" }
+        request(PiRequest.ReloadRuntime) { result ->
+            result.onSuccess {
+                requestCommands()
+                refresh()
+            }.onFailure(::requestFailed)
+        }
+    }
     fun requestThinkingLevels() = request(PiRequest.GetThinkingLevels) { result ->
         result.onSuccess { values -> update { it.copy(thinkingLevels = values, thinkingLevelsRevision = it.thinkingLevelsRevision + 1, failure = null) } }
             .onFailure(::requestFailed)
