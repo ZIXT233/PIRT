@@ -92,7 +92,7 @@ Pi owns the conversation history and agent lifecycle. PIRT owns the Android life
 | XFCE | 4.18 |
 | PRoot | 5.1.107.89 |
 
-The bundled initial Rootfs image is verified with SHA-256 before extraction. The installed environment is writable, so the initial image checksum is not a checksum of the environment after use.
+The bundled initial Rootfs image is verified with SHA-256 before extraction. The installed environment is writable, so the initial image checksum is not a checksum of the environment after use. See the [Rootfs build guide](docs/rootfs-build.md) to rebuild the image from public sources.
 
 ## Status
 

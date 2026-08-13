@@ -79,7 +79,7 @@ Android / Jetpack Compose
                /workspace
 ```
 
-Pi 负责会话历史与 Agent 生命周期；PIRT 负责 Android 生命周期、本地运行环境、共享工作区和移动端呈现。技术细节可查看[架构文档](docs/architecture.md)。
+Pi 负责会话历史与 Agent 生命周期；PIRT 负责 Android 生命周期、本地运行环境、共享工作区和移动端呈现。技术细节可查看[架构文档](docs/architecture.zh-CN.md)。
 
 ## 运行环境
 
@@ -92,7 +92,7 @@ Pi 负责会话历史与 Agent 生命周期；PIRT 负责 Android 生命周期�
 | XFCE | 4.18 |
 | PRoot | 5.1.107.89 |
 
-应用会在解压前使用 SHA-256 校验内置的初始 Rootfs 镜像。安装后的环境允许写入，因此这个校验值不代表使用过程中 Rootfs 始终保持不变。
+应用会在解压前使用 SHA-256 校验内置的初始 Rootfs 镜像。安装后的环境允许写入，因此这个校验值不代表使用过程中 Rootfs 始终保持不变。可以按照 [Rootfs 构建文档](docs/rootfs-build.zh-CN.md) 从公开源重新构建镜像。
 
 ## 项目状态
 

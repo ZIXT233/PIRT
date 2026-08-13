@@ -1,5 +1,7 @@
 # PIRT architecture
 
+English · [简体中文](architecture.zh-CN.md)
+
 PIRT is an Android projection of Pi running in one app-private Ubuntu PRoot environment. Pi owns conversations; PIRT owns the Android lifecycle, the shared workspace, and presentation.
 
 ## Ownership
@@ -14,6 +16,10 @@ flowchart TD
     SERVICE --> CATALOG["PiSessionCatalog"]
     SERVICE --> MANAGER["PiSessionManager"]
     SERVICE --> CONTROL["PiControlClient"]
+    SERVICE --> TERMINAL["TerminalManager"]
+    SERVICE --> GRAPHICS["GraphicsManager"]
+    SERVICE --> PROCESSES["ProcessManager"]
+    SERVICE --> OVERLAY["OverlayKeepAlive"]
     MANAGER --> CTRL["SessionController"]
     CTRL --> CONTROL
     CONTROL --> HOST["one resident PRoot/Node process"]
@@ -27,6 +33,8 @@ flowchart TD
 There is no Android conversation database and no `workspace.json`. The fixed workspace is `files/pirt/workspace`. Pi JSONL under the Ubuntu rootfs is the only persisted conversation catalog and history.
 
 `RuntimeService` owns one resident PRoot/Node process through `PiControlClient`. That process imports the Pi SDK once and owns authentication, models, the catalog, and all live `AgentSessionRuntime` instances. Opening or switching conversations does not create another OS process. Activities bind through `RuntimeConnection`; Compose never owns the Node process or SDK sessions.
+
+`RuntimeService` also owns the persistent shell, graphical desktop, process projection, notification, and overlay. These components therefore do not follow the lifecycle of an individual Compose page. The service runs in the app process and promotes itself with one foreground notification; it is not a separate Android process.
 
 Each live conversation has one `AgentSessionRuntime`. Runtime replacement operations use Pi's own lifecycle (`session_before_fork`, `session_shutdown`, `session_start`) and rebind extension/event subscriptions to the replacement `AgentSession`. Deletion and service shutdown dispose runtimes; ordinary UI navigation keeps them alive for fast switching.
 
@@ -97,3 +105,25 @@ files/pirt/
 Every Pi process, terminal, and desktop mounts the same host workspace at `/workspace`. Conversations isolate Pi history, not files. PIRT does not manage Git repositories, branches, worktrees, checkpoints, diffs, or rollback.
 
 `WorkspaceDocumentsProvider` projects that same app-private workspace into Android's Storage Access Framework as the `PIRT / Workspace` document root. System file managers and SAF-aware apps operate on the original files through content URIs; PIRT does not copy, mirror, or relocate the workspace.
+
+## Long-running processes and background activity
+
+Commands started in the Ubuntu environment are not owned by a Pi conversation. They can continue after the user switches conversations or leaves the chat page, which allows workloads such as a Minecraft server to run independently. `ProcessManager` projects the host/PRoot process tree into the UI and can terminate a selected process; it does not store a second process database.
+
+`RuntimeService` keeps the runtime visible to Android through its foreground notification. It holds a partial wake lock only while a Pi session is busy or the persistent terminal is active, and releases it when those conditions end. When enabled, the application overlay keeps the app active while it is in the background and exposes compact chat/process controls. The overlay and service improve background continuity but remain subject to Android's process-management policy.
+
+## Graphical desktop
+
+`GraphicsManager` starts one service-owned graphics stack inside the same PRoot environment:
+
+```text
+XFCE on DISPLAY=:100
+        ↓
+TigerVNC on 127.0.0.1:6000
+        ↓
+websockify + noVNC on 127.0.0.1:16000
+```
+
+The display number is fixed by `PRootRuntime.GRAPHICS_DISPLAY = 100`; Pi and terminal processes also receive `DISPLAY=:100`. The VNC and noVNC listeners bind to localhost. The Android UI can open noVNC in a browser or pass the local VNC address and password to a client such as aVNC.
+
+The PIRT environment prompt tells the Agent to prefer `DISPLAY=:100` for desktop inspection, screenshots, and GUI interaction. If that display is unavailable, it asks the user to start **Desktop** from the app sidebar rather than guessing another display.

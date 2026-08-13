@@ -63,13 +63,14 @@ echo "version=$VERSION size=$SIZE sha256=$SHA256"
 2. **`app/src/main/java/io/github/zixt233/pirt/runtime/RuntimeInstaller.kt`**
    - `RuntimeArtifacts.ubuntuArm64` 的 `version`、`size`、`sha256` 同步
 
+blob 是大型生成产物，已被 Git 忽略。构建 APK 时保留在本地，签名 APK 通过 GitHub Releases 分发；仓库只提交构建流程与更新后的版本/校验元数据。
+
 提交示例：
 
 ```bash
-git add app/src/main/assets/runtime/ubuntu-base-24.04.4-base-arm64.blob \
-        app/src/main/assets/runtime/manifest.json \
+git add app/src/main/assets/runtime/manifest.json \
         app/src/main/java/io/github/zixt233/pirt/runtime/RuntimeInstaller.kt
-git commit -m "build: rootfs ${VERSION} arm64 blob"
+git commit -m "build: update rootfs ${VERSION} metadata"
 git push
 ```
 
@@ -88,7 +89,7 @@ git push
 tar -tzf build/pirt-rootfs-arm64.tar.gz >/dev/null && echo "tar ok"
 ```
 
-不要用 `tools/validate-rootfs-blob.mjs` 作为唯一依据；以 GNU `tar -tzf` 通过为准。
+以 GNU `tar -tzf` 通过为归档完整性的校验依据。
 
 ## 常见问题
 
@@ -100,10 +101,3 @@ assets 里的 blob 是 Windows tar 拼接产物。删除后用本脚本重建的
 
 **构建脚本找不到 `rootfs.env`**  
 确保 `tools/rootfs.env` 与 `tools/build-rootfs.sh` 在同一目录；单独拷贝时两个文件一起拷。
-
-## 已废弃
-
-- `tools/build_graphics_rootfs.py`
-- `tools/build_graphics_rootfs.mjs`
-
-上述脚本在 Windows 上拼接 tar 流，会产生 GNU tar 无法完整解压的归档。**禁止用于发版。**

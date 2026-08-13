@@ -35,6 +35,8 @@ The script prints JSON with `size` and `sha256`. Update:
 2. `app/src/main/java/io/github/zixt233/pirt/runtime/RuntimeInstaller.kt` (`RuntimeArtifacts.ubuntuArm64`)
 3. Copy/rename the artifact to `app/src/main/assets/runtime/ubuntu-base-24.04.4-base-arm64.blob`
 
+The blob is ignored by Git because it is a large generated release asset. Keep it locally when building the APK and distribute the signed APK through GitHub Releases. Commit only the build recipe and updated version/checksum metadata.
+
 ## Remote build example
 
 ```bash
@@ -42,7 +44,3 @@ scp tools/rootfs.env tools/build-rootfs.sh ubuntu@your-host:/tmp/pirt/
 ssh ubuntu@your-host 'cd /tmp/pirt && bash build-rootfs.sh /tmp/pirt-rootfs.tar.gz'
 scp ubuntu@your-host:/tmp/pirt-rootfs.tar.gz build/
 ```
-
-## Deprecated
-
-Do **not** use `build_graphics_rootfs.py` / `.mjs` tar concatenation on Windows. It produces concatenated tar streams that GNU `tar` and some readers treat as truncated/corrupt. Use `build-rootfs.sh` instead.

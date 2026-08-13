@@ -19,10 +19,6 @@ local.properties
 /tools/node_modules/
 /tools/.rootfs-cache/
 /.idea/
-# Rootfs blob exceeds Gitee 100MB limit; keep local / copy via USB. See docs/rootfs-build.zh-CN.md
+# The bundled Rootfs is a large generated release asset; do not store it in Git.
 *.blob
 /references/
-/tools/build_graphics_rootfs.mjs
-/tools/validate-rootfs-blob.mjs
-/tools/package.json
-/tools/package-lock.json
