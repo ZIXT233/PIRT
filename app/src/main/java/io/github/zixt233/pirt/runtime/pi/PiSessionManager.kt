@@ -62,6 +62,15 @@ class PiSessionManager(
         controller.steer(message, images)
     }
 
+    @Synchronized
+    fun executePiCommand(sessionId: String, text: String) {
+        val normalized = text.trim()
+        require(normalized.startsWith("/") && normalized.length > 1) { "请输入以 / 开头的 Pi 命令" }
+        val controller = checkNotNull(controller(sessionId)) { "Pi 会话尚未打开" }
+        check(controller === selected) { "只能在当前会话执行命令" }
+        controller.executePiCommand(normalized)
+    }
+
     @Synchronized fun abort(sessionId: String) = controller(sessionId)?.abort()
     @Synchronized fun requestModels(sessionId: String) = controller(sessionId)?.requestModels()
     @Synchronized fun requestCommands(sessionId: String) = controller(sessionId)?.requestCommands()

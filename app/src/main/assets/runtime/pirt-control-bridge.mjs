@@ -52,6 +52,10 @@ let modelsLoadPromise = null;
 let modelsGeneration = 0;
 
 const MAX_SENT_IMAGE_BYTES = 20 * 1024 * 1024;
+const BLOCKED_PIRT_COMMANDS = new Set([
+  "new", "fork", "clone", "tree", "model", "models", "thinking", "thinking-level",
+  "compact", "session", "resume", "delete", "rename", "provider", "providers", "login", "logout",
+]);
 const SendImageParams = Type.Object({
   path: Type.String({
     description: "Absolute path or workspace-relative path of the local image to send",
@@ -618,7 +622,7 @@ async function handleAgent(command) {
     case "prompt": {
       let replied = false;
       void session.prompt(command.message, {
-        images: command.images, source: "rpc",
+        images: command.images, source: "rpc", expandPromptTemplates: false,
         preflightResult: (ok) => { if (ok && !replied) { replied = true; reply(command, true, {}); } },
       }).catch((error) => {
         if (!replied) reply(command, false, error?.message || error);
@@ -626,8 +630,31 @@ async function handleAgent(command) {
       });
       return true;
     }
+    case "execute_pi_command": {
+      const text = String(command.text || "").trim();
+      const match = text.match(/^\/([^\s]+)(?:\s+[\s\S]*)?$/);
+      if (!match) throw new Error("请输入以 / 开头的 Pi 命令");
+      const commandName = match[1];
+      if (BLOCKED_PIRT_COMMANDS.has(commandName.toLowerCase())) {
+        throw new Error(`/${commandName} 可能改变 PIRT 会话、模型或上下文，请使用应用内对应功能`);
+      }
+      const extensionNames = new Set(session.extensionRunner.getRegisteredCommands().map((item) => item.invocationName));
+      const templateNames = new Set(session.promptTemplates.map((item) => item.name));
+      const skillNames = new Set(session.resourceLoader.getSkills().skills.map((item) => `skill:${item.name}`));
+      if (!extensionNames.has(commandName) && !templateNames.has(commandName) && !skillNames.has(commandName)) {
+        throw new Error(`当前会话没有可执行命令：/${commandName}`);
+      }
+      await session.prompt(text, { source: "rpc" });
+      reply(command, true, {});
+      return true;
+    }
     case "steer": {
-      await session.steer(command.message, command.images);
+      await session.prompt(command.message, {
+        images: command.images,
+        source: "rpc",
+        expandPromptTemplates: false,
+        streamingBehavior: "steer",
+      });
       reply(command, true, {});
       return true;
     }

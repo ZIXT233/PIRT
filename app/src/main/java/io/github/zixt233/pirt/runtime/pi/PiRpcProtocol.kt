@@ -235,6 +235,11 @@ sealed class PiRequest<T>(
         override fun decode(data: JSONObject?) = Unit
     }
 
+    data class ExecutePiCommand(val text: String) : PiRequest<Unit>("execute_pi_command", 3_600_000L) {
+        override fun payload() = base().put("text", text)
+        override fun decode(data: JSONObject?) = Unit
+    }
+
     data object Abort : PiRequest<Unit>("abort") {
         override fun payload() = base()
         override fun decode(data: JSONObject?) = Unit

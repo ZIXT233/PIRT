@@ -920,9 +920,12 @@ private fun chatStatus(state: ChatUiState, language: AppLanguage): String = when
     else -> language.text("就绪", "Ready")
 }
 
-private fun isDuplicatePiCommand(command: PiCommand): Boolean = command.name.lowercase() in setOf(
-    "model", "models", "thinking", "thinking-level", "compact", "new", "fork", "clone", "tree",
+private val blockedPiCommandNames = setOf(
+    "new", "fork", "clone", "tree", "model", "models", "thinking", "thinking-level",
+    "compact", "session", "resume", "delete", "rename", "provider", "providers", "login", "logout",
 )
+
+private fun isBlockedPiCommand(command: PiCommand): Boolean = command.name.lowercase() in blockedPiCommandNames
 
 @Composable
 private fun ComposerShortcut(label: String, enabled: Boolean = true, onClick: () -> Unit) {
@@ -1264,7 +1267,7 @@ private fun ConversationPage(
     )
     var modelMenuExpanded by remember(session.runtimeKey) { mutableStateOf(false) }
     var modelMenuRequested by remember(session.runtimeKey) { mutableStateOf(false) }
-    val commands = ui.commands.filterNot(::isDuplicatePiCommand)
+    val commands = ui.commands.filterNot(::isBlockedPiCommand)
     val extensionUiRequest = ui.extensionUiRequests.firstOrNull()
     val thinkingLevels = ui.thinkingLevels
     var showPiControls by remember(session.runtimeKey) { mutableStateOf(false) }
@@ -1545,8 +1548,9 @@ private fun ConversationPage(
             autoCompaction = autoCompaction,
             autoRetry = autoRetry,
             canClone = !agentBusy && historyLoaded && session.path != null,
-            onCommand = {
-                updateDraft("/${it.name} ")
+            canExecuteCommand = ui.ready && !agentBusy,
+            onExecuteCommand = {
+                chat.executePiCommand(it)
                 showPiControls = false
             },
             onClone = {
@@ -2071,7 +2075,8 @@ private fun PiControlsDialog(
     autoRetry: Boolean,
     canClone: Boolean,
     canExport: Boolean,
-    onCommand: (PiCommand) -> Unit,
+    canExecuteCommand: Boolean,
+    onExecuteCommand: (String) -> Unit,
     onClone: () -> Unit,
     onExport: () -> Unit,
     onToggleAutoCompaction: () -> Unit,
@@ -2079,6 +2084,7 @@ private fun PiControlsDialog(
     onDismiss: () -> Unit,
 ) {
     val language = LocalAppLanguage.current
+    var commandText by rememberSaveable { mutableStateOf("") }
     val actionCommands = commands.filter { it.source == "extension" }
     val promptTemplates = commands.filter { it.source == "prompt" }
     val workflows = commands.filter { it.source == "skill" }
@@ -2110,12 +2116,32 @@ private fun PiControlsDialog(
                     }
                 }
                 item { Text(language.text("PIRT 扩展能力", "PIRT extensions"), fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp)) }
+                item {
+                    OutlinedTextField(
+                        value = commandText,
+                        onValueChange = { commandText = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        label = { Text(language.text("Pi 命令", "Pi command")) },
+                        placeholder = { Text("/command args") },
+                        supportingText = { Text(language.text("仅执行下方列出的命令；会话和模型操作请使用 PIRT 界面。", "Only commands listed below can run. Use PIRT controls for sessions and models.")) },
+                    )
+                }
+                item {
+                    Button(
+                        onClick = { onExecuteCommand(commandText.trim()) },
+                        enabled = canExecuteCommand && commandText.trim().let { it.startsWith("/") && it.length > 1 },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(language.text("执行命令", "Run command"))
+                    }
+                }
                 if (commands.isEmpty()) {
                     item { Text(language.text("当前 workspace 没有额外的快捷操作、提示词或工作流。", "This workspace has no additional actions, prompt templates, or workflows.")) }
                 } else {
-                    commandGroup(language.text("快捷操作", "Actions"), language.text("执行扩展提供的功能", "Run features provided by extensions"), actionCommands, onCommand)
-                    commandGroup(language.text("提示词", "Prompts"), language.text("展开可复用的提示内容", "Insert reusable prompt content"), promptTemplates, onCommand)
-                    commandGroup(language.text("工作流", "Workflows"), language.text("让 AI 按专业流程完成任务", "Let AI follow a specialized workflow"), workflows, onCommand)
+                    commandGroup(language.text("快捷操作", "Actions"), language.text("选择后可补充参数再执行", "Select, add arguments, then run"), actionCommands) { commandText = "/${it.name} " }
+                    commandGroup(language.text("提示词", "Prompts"), language.text("选择后可补充参数再执行", "Select, add arguments, then run"), promptTemplates) { commandText = "/${it.name} " }
+                    commandGroup(language.text("工作流", "Workflows"), language.text("选择后可补充参数再执行", "Select, add arguments, then run"), workflows) { commandText = "/${it.name} " }
                 }
             }
         },

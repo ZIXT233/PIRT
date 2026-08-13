@@ -88,6 +88,8 @@ class ChatViewModel(
         runtime.manager.value?.steer(session.runtimeKey, message, images.map { PiImage(it.data, it.mimeType) })
     }
 
+    fun executePiCommand(text: String) = runtime.manager.value?.executePiCommand(session.runtimeKey, text)
+
     fun abort() = runtime.manager.value?.abort(session.runtimeKey)
     fun requestModels() = runtime.manager.value?.requestModels(session.runtimeKey)
     fun requestCommands() = runtime.manager.value?.requestCommands(session.runtimeKey)

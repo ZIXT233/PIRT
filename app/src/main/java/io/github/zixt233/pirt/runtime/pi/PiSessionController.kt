@@ -73,6 +73,18 @@ internal class PiSessionController(
         request(PiRequest.Steer(message, images)) { result -> result.onFailure(::requestFailed) }
     }
 
+    fun executePiCommand(text: String) {
+        check(opened && state.value.process == ProcessState.RUNNING) { "Pi 会话尚未准备好" }
+        check(!busy()) { "AI 正在运行，请等待当前操作完成" }
+        update { it.copy(execution = emptyList(), failure = null) }
+        request(PiRequest.ExecutePiCommand(text)) { result ->
+            result.onSuccess {
+                refresh()
+                catalog.refresh()
+            }.onFailure(::requestFailed)
+        }
+    }
+
     fun abort() {
         update { it.copy(turn = TurnState.STOPPING) }
         request(PiRequest.Abort) { result ->
@@ -268,11 +280,17 @@ internal class PiSessionController(
                 pendingAssistantError = null
                 if (finalError != null) {
                     onFailure(PiFailure.Command("prompt", finalError))
-                    update { it.copy(agent = it.agent.copy(streaming = false, steeringMessages = emptyList())) }
+                    update {
+                        it.copy(
+                            execution = it.execution.finishPendingExecution(),
+                            agent = it.agent.copy(streaming = false, steeringMessages = emptyList()),
+                        )
+                    }
                 } else {
                     update {
                         it.copy(
                             turn = if (it.turn == TurnState.FAILED) TurnState.FAILED else TurnState.COMPLETED,
+                            execution = it.execution.finishPendingExecution(),
                             agent = it.agent.copy(streaming = false, steeringMessages = emptyList()),
                         )
                     }
@@ -450,6 +468,13 @@ internal class PiSessionController(
             onStateChanged(this)
             onActivityChanged()
         }
+    }
+}
+
+private fun List<PiExecutionItem>.finishPendingExecution(): List<PiExecutionItem> = map { item ->
+    when (item) {
+        is PiThinkingState -> if (item.finished) item else item.copy(finished = true)
+        is PiToolState -> if (item.finished) item else item.copy(finished = true)
     }
 }
 

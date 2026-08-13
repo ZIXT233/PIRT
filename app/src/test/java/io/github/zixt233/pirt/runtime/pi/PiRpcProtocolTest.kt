@@ -9,6 +9,14 @@ import org.junit.Test
 
 class PiRpcProtocolTest {
     @Test
+    fun dedicatedPiCommandUsesSeparateRpcRequest() {
+        val request = PiRequest.ExecutePiCommand("/example value")
+
+        assertEquals("execute_pi_command", request.command)
+        assertEquals("/example value", request.payload().getString("text"))
+    }
+
+    @Test
     fun modelSwitchDecodesClampedThinkingState() {
         val selection = PiRequest.SetModel("deepseek", "deepseek-v4-pro").decode(JSONObject(
             """{
