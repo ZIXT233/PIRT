@@ -347,6 +347,17 @@ internal class PiSessionController(
                     )
                 }
             }
+            is PiStreamEvent.CustomMessageStarted -> update { current ->
+                current.copy(
+                    messages = current.messages + PiMessage(
+                        UUID.randomUUID().toString(),
+                        PiMessageRole.ASSISTANT,
+                        event.text,
+                        event.images,
+                    ),
+                    failure = null,
+                )
+            }
             PiStreamEvent.ThinkingStarted -> update { it.copy(execution = it.execution + PiThinkingState(UUID.randomUUID().toString())) }
             is PiStreamEvent.ThinkingDelta -> update { current ->
                 val index = current.execution.indexOfLast { it is PiThinkingState && !it.finished }

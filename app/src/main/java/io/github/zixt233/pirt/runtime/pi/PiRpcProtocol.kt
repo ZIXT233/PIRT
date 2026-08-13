@@ -163,6 +163,7 @@ sealed interface PiStreamEvent {
     data class Failed(val message: String) : PiStreamEvent
     data class QueueUpdated(val steering: List<String>) : PiStreamEvent
     data class UserMessageStarted(val text: String, val images: List<PiImage> = emptyList()) : PiStreamEvent
+    data class CustomMessageStarted(val text: String, val images: List<PiImage> = emptyList()) : PiStreamEvent
     data class ToolStarted(val id: String, val name: String, val summary: String, val input: String) : PiStreamEvent
     data class ToolUpdated(val id: String, val output: String, val images: List<PiImage> = emptyList()) : PiStreamEvent
     data class ToolEnded(
@@ -446,10 +447,13 @@ internal fun parseStreamEvent(json: JSONObject): PiStreamEvent? = when (json.opt
     "session_error" -> PiStreamEvent.Failed(json.optString("error", "Pi 请求失败"))
     "queue_update" -> PiStreamEvent.QueueUpdated(json.optJSONArray("steering").toStrings())
     "message_start" -> json.optJSONObject("message")?.let { message ->
-        if (message.optString("role") != "user") return@let PiStreamEvent.Ignored
+        val role = message.optString("role")
+        if (role == "custom" && !message.optBoolean("display", true)) return@let PiStreamEvent.Ignored
+        if (role != "user" && role != "custom") return@let PiStreamEvent.Ignored
         val content = decodeMessageContent(message.opt("content"))
         if (content.first.isBlank() && content.second.isEmpty()) return@let PiStreamEvent.Ignored
-        PiStreamEvent.UserMessageStarted(content.first, content.second)
+        if (role == "custom") PiStreamEvent.CustomMessageStarted(content.first, content.second)
+        else PiStreamEvent.UserMessageStarted(content.first, content.second)
     } ?: PiStreamEvent.Ignored
     "auto_retry_end" -> PiStreamEvent.AutoRetryEnded(
         success = json.optBoolean("success"),
@@ -496,6 +500,7 @@ private fun decodeMessages(values: JSONArray?): List<PiMessage> = buildList {
         val role = when (message.optString("role")) {
             "user" -> PiMessageRole.USER
             "assistant" -> PiMessageRole.ASSISTANT
+            "custom" -> PiMessageRole.ASSISTANT
             else -> continue
         }
         val content = decodeMessageContent(message.opt("content"))

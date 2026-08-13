@@ -88,6 +88,32 @@ class PiRpcProtocolTest {
     }
 
     @Test
+    fun visibleCustomMessagesDecodeForHistoryAndLiveEvents() {
+        val history = PiRequest.GetMessages.decode(JSONObject("""{"messages":[
+            {"entryId":"custom-1","role":"custom","customType":"probe","content":"plugin reply"}
+        ]}"""))
+
+        assertEquals(1, history.size)
+        assertEquals(PiMessageRole.ASSISTANT, history.single().role)
+        assertEquals("plugin reply", history.single().text)
+        assertEquals("custom-1", history.single().entryId)
+
+        val live = parseStreamEvent(JSONObject("""{
+            "type":"message_start",
+            "message":{"role":"custom","customType":"probe","content":"live reply","display":true}
+        }""")) as PiStreamEvent.CustomMessageStarted
+        assertEquals("live reply", live.text)
+
+        assertEquals(
+            PiStreamEvent.Ignored,
+            parseStreamEvent(JSONObject("""{
+                "type":"message_start",
+                "message":{"role":"custom","content":"internal","display":false}
+            }""")),
+        )
+    }
+
+    @Test
     fun messageHistoryPromotesOnlyExplicitlySentImages() {
         val messages = PiRequest.GetMessages.decode(JSONObject("""{"messages":[
             {"entryId":"read-image-entry","role":"toolResult","toolName":"read","content":[

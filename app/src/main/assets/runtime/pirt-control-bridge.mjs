@@ -555,14 +555,22 @@ function requireEntry(command) {
 
 function messageEntries(session) {
   const entries = session.sessionManager.getBranch()
-    .filter((entry) => entry.type === "message")
-    .map((entry) => ({
-      entryId: entry.id,
-      role: entry.message.role,
-      toolName: entry.message.toolName,
-      content: entry.message.content,
-      errorMessage: entry.message.errorMessage,
-    }));
+    .flatMap((entry) => {
+      if (entry.type === "message") return [{
+        entryId: entry.id,
+        role: entry.message.role,
+        toolName: entry.message.toolName,
+        content: entry.message.content,
+        errorMessage: entry.message.errorMessage,
+      }];
+      if (entry.type === "custom_message" && entry.display !== false) return [{
+        entryId: entry.id,
+        role: "custom",
+        content: entry.content,
+        customType: entry.customType,
+      }];
+      return [];
+    });
 
   // Pi persists every failed provider attempt before auto-retrying it. Keep
   // those records as Pi-owned history, but only expose the final outcome of a
