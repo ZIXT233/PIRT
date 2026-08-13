@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.pirt"
+    namespace = "io.github.zixt233.pirt"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.example.pirt"
+        applicationId = "io.github.zixt233.pirt"
         minSdk = 24
         targetSdk = 37
         versionCode = 1
@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.commons.compress)
     implementation(libs.markdown.renderer.m3)
+    implementation(libs.ratex)
     testImplementation(libs.junit)
     testImplementation(libs.json)
     androidTestImplementation(platform(libs.androidx.compose.bom))

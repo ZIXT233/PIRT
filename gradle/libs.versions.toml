@@ -10,6 +10,7 @@ kotlin = "2.2.10"
 composeBom = "2026.02.01"
 commonsCompress = "1.28.0"
 markdownRenderer = "0.41.0"
+ratex = "0.1.14"
 json = "20240303"
 
 [libraries]
@@ -32,6 +33,7 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version = "1.10.2" }
 commons-compress = { group = "org.apache.commons", name = "commons-compress", version.ref = "commonsCompress" }
 markdown-renderer-m3 = { group = "com.mikepenz", name = "multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }
+ratex = { group = "io.github.darriousliu", name = "ratex", version.ref = "ratex" }
 json = { group = "org.json", name = "json", version.ref = "json" }
 
 [plugins]

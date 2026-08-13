@@ -10,6 +10,8 @@
 /.idea/assetWizardSettings.xml
 .DS_Store
 /build
+/app/release/
+/phone-*.png
 /captures
 .externalNativeBuild
 .cxx
