@@ -16,7 +16,7 @@ PIRT 在 APK 里打包一个 **arm64 Debian rootfs**（`tar.gz` blob）。本文
 
 ## 构建机要求
 
-- Debian / Ubuntu（x86_64 或 arm64；ARM Mac 可用 Docker `linux/arm64`）
+- Debian 或其他基于 Debian 的 Linux 构建环境（x86_64 或 arm64；ARM Mac 可用 Docker `linux/arm64`）
 - `sudo`、网络（apt + npm）
 - 磁盘 ≥ 8 GB，内存 ≥ 2 GB
 - 非 aarch64 主机构建 arm64 rootfs 需 `qemu-user-static`（脚本会自动安装）

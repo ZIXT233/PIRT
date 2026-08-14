@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Reproducible PIRT arm64 rootfs from Debian 13 (trixie) minbase + pinned apt/npm packages.
-# Requires: Debian/Ubuntu host (or Docker), sudo, curl, tar, debootstrap.
+# Requires: Debian or another Debian-based Linux environment (or Docker), sudo, curl, tar, debootstrap.
 # On non-aarch64 hosts also needs qemu-user-static.
 #
 # Usage:

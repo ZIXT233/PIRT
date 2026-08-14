@@ -108,7 +108,7 @@ Every Pi process, terminal, and desktop mounts the same host workspace at `/work
 
 ## Long-running processes and background activity
 
-Commands started in the Ubuntu environment are not owned by a Pi conversation. They can continue after the user switches conversations or leaves the chat page, which allows workloads such as a Minecraft server to run independently. `ProcessManager` projects the host/PRoot process tree into the UI and can terminate a selected process; it does not store a second process database.
+Commands started in the Debian environment are not owned by a Pi conversation. They can continue after the user switches conversations or leaves the chat page, which allows workloads such as a Minecraft server to run independently. `ProcessManager` projects the host/PRoot process tree into the UI and can terminate a selected process; it does not store a second process database.
 
 `RuntimeService` keeps the runtime visible to Android through its foreground notification. It holds a partial wake lock only while a Pi session is busy or the persistent terminal is active, and releases it when those conditions end. When enabled, the application overlay keeps the app active while it is in the background and exposes compact chat/process controls. The overlay and service improve background continuity but remain subject to Android's process-management policy.
 

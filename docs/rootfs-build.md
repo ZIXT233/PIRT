@@ -18,7 +18,7 @@ Pinned top-level versions live in `tools/rootfs.env`. Android-side bridge script
 
 ## Host requirements
 
-- Debian/Ubuntu host (x86_64 or arm64; ARM Mac via Docker `linux/arm64` works)
+- Debian or another Debian-based Linux environment (x86_64 or arm64; ARM Mac via Docker `linux/arm64` works)
 - `sudo`, `curl`, `tar`, `debootstrap`, network for apt/npm
 - ~8 GB free disk, ~2 GB RAM
 - Non-aarch64 hosts need `qemu-user-static` (installed by the script)
