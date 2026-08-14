@@ -32,8 +32,8 @@ object RuntimeArtifacts {
     val debianArm64 = RuntimeArtifact(
         version = "13.6.0-pirt-1",
         url = "https://www.debian.org/releases/trixie/",
-        sha256 = "18230c2df6bb2ee93ff98fe19a5fbf1233a64c68e1853fb89f64b702b6906c73",
-        size = 390_785_764,
+        sha256 = "cc33bae09e75e74b4a680e089c09798e2b64a4e3ce07a84401478c3f2a6f8d4c",
+        size = 372_009_812,
         assetPath = "runtime/debian-13.6.0-base-arm64.blob",
     )
 }

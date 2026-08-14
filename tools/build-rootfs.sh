@@ -166,6 +166,12 @@ EOF
   run_chroot apt-get update -qq
   run_chroot apt-get install -y -qq --no-install-recommends "${APT_PACKAGES[@]}"
 
+  # Debian novnc Depends: nodejs, but runtime only needs static assets + websockify.
+  # Force-remove apt Node 20 without pulling novnc out via dependency resolution.
+  log "remove apt nodejs (keep novnc; Pi uses Node 22 from tarball)"
+  run_chroot bash -c 'dpkg --purge --force-depends nodejs libnode115 node-corepack node-acorn node-undici node-minimatch node-cjs-module-lexer node-brace-expansion node-balanced-match node-xtend 2>/dev/null || true'
+  run_chroot bash -c 'dpkg --purge --force-depends $(dpkg-query -W -f="\${Package}\n" "node-*" "libnode*" 2>/dev/null | tr "\n" " ") 2>/dev/null || true'
+
   log "install Node.js ${NODE_VERSION} (arm64 official tarball)"
   local node_tgz="$CACHE/node-v${NODE_VERSION}-linux-arm64.tar.xz"
   fetch "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-arm64.tar.xz" \
@@ -182,6 +188,13 @@ EOF
   run_chroot test -x /usr/bin/Xtigervnc
   run_chroot test -x /usr/bin/xdg-open
   run_chroot test -x /usr/bin/xfce4-terminal
+  run_chroot test -e /usr/share/novnc/vnc.html
+  run_chroot test -x /usr/bin/websockify
+  # Ensure apt node is gone (only /usr/local/bin/node should remain on PATH for root).
+  if run_chroot test -e /usr/bin/nodejs || run_chroot test -e /usr/lib/aarch64-linux-gnu/libnode.so.115; then
+    echo "apt nodejs leftovers still present" >&2
+    exit 1
+  fi
 
   log "trim caches"
   run_chroot apt-get clean
