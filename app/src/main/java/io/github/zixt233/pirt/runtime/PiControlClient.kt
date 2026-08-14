@@ -95,12 +95,19 @@ class PiControlClient(
         process = child
         writer = BufferedWriter(OutputStreamWriter(child.outputStream, StandardCharsets.UTF_8))
         Thread({
-            child.inputStream.bufferedReader(StandardCharsets.UTF_8).useLines { lines -> lines.forEach(::readStdout) }
-            processStopped("Pi SDK host exited (${child.waitFor()})")
+            runCatching {
+                child.inputStream.bufferedReader(StandardCharsets.UTF_8).useLines { lines -> lines.forEach(::readStdout) }
+            }
+            val exit = runCatching { child.waitFor() }.getOrDefault(-1)
+            synchronized(this) {
+                if (process === child) processStopped("Pi SDK host exited ($exit)")
+            }
         }, "pirt-pi-host-output").apply { isDaemon = true }.start()
         Thread({
-            child.errorStream.bufferedReader(StandardCharsets.UTF_8).useLines { lines ->
-                lines.forEach { if (it.isNotBlank()) diagnostic("Pi SDK host stderr: $it", null) }
+            runCatching {
+                child.errorStream.bufferedReader(StandardCharsets.UTF_8).useLines { lines ->
+                    lines.forEach { if (it.isNotBlank()) diagnostic("Pi SDK host stderr: $it", null) }
+                }
             }
         }, "pirt-pi-host-error").apply { isDaemon = true }.start()
     }

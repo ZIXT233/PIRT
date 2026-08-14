@@ -75,11 +75,13 @@ class GraphicsManager(
             }
             val output = StringBuilder()
             Thread({
-                child.inputStream.bufferedReader().useLines { lines ->
-                    lines.forEach {
-                        synchronized(output) {
-                            output.appendLine(it)
-                            if (output.length > 20_000) output.delete(0, output.length - 16_000)
+                runCatching {
+                    child.inputStream.bufferedReader().useLines { lines ->
+                        lines.forEach {
+                            synchronized(output) {
+                                output.appendLine(it)
+                                if (output.length > 20_000) output.delete(0, output.length - 16_000)
+                            }
                         }
                     }
                 }

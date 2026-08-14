@@ -273,7 +273,7 @@ fun PirtApp() {
     LaunchedEffect(installAttempt) {
         val detectedState = runtime.state()
         runtimeState = if (replaceInitialEnvironment) {
-            RuntimeState.NotInstalled("正在替换本地初始环境")
+            RuntimeState.NotInstalled("正在重置为 APK 初始 Rootfs")
         } else {
             detectedState
         }
@@ -540,7 +540,7 @@ fun PirtApp() {
                                 installLogs = emptyList()
                                 installState = InstallState.Idle
                                 replaceInitialEnvironment = true
-                                runtimeState = RuntimeState.NotInstalled("正在替换本地初始环境")
+                                runtimeState = RuntimeState.NotInstalled("正在重置为 APK 初始 Rootfs")
                                 installAttempt += 1
                             }
                         },

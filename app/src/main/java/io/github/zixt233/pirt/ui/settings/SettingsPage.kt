@@ -566,7 +566,7 @@ fun SettingsPage(
                         Text(language.text("环境信息", "Environment"), style = MaterialTheme.typography.titleLarge)
                         EnvironmentVersionRow(language.text("已安装 Rootfs", "Installed rootfs"), rootfsBuild)
                         EnvironmentVersionRow(
-                            language.text("APK 内置初始 Rootfs", "Bundled initial rootfs"),
+                            language.text("APK 初始 Rootfs", "APK initial rootfs"),
                             RuntimeArtifacts.debianArm64.version,
                         )
                         EnvironmentVersionRow(
@@ -580,8 +580,8 @@ fun SettingsPage(
                         EnvironmentVersionRow(language.text("软件版本", "App version"), appVersion)
                         Text(
                             language.text(
-                                "Rootfs 是可写的初始环境基座，升级 PIRT 不会自动替换当前环境。",
-                                "The rootfs is a writable initial environment. PIRT upgrades never replace the installed environment automatically.",
+                                "Rootfs 是可写的初始环境基座，升级 PIRT 不会自动重置当前环境。",
+                                "The rootfs is a writable initial environment. PIRT upgrades never reset the installed environment automatically.",
                             ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -590,7 +590,7 @@ fun SettingsPage(
                             onClick = { showReplaceEnvironmentDialog = true },
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                         ) {
-                            Text(language.text("替换为 APK 内置初始环境", "Replace with bundled initial environment"))
+                            Text(language.text("重置为 APK 初始 Rootfs", "Reset to APK initial rootfs"))
                         }
                     }
                 }
@@ -628,12 +628,12 @@ fun SettingsPage(
     if (showReplaceEnvironmentDialog) {
         AlertDialog(
             onDismissRequest = { showReplaceEnvironmentDialog = false },
-            title = { Text(language.text("替换本地环境？", "Replace local environment?")) },
+            title = { Text(language.text("重置为 APK 初始 Rootfs？", "Reset to APK initial rootfs?")) },
             text = {
                 Text(
                     language.text(
-                        "将删除当前 Debian 系统层并重新解压 APK 内置 Rootfs。通过 apt 安装的软件包以及对系统目录的修改都会被清除。/workspace、Pi 会话和登录数据会保留。此操作无法撤销。",
-                        "This deletes the current Debian system layer and extracts the rootfs bundled with the APK. Packages installed with apt and changes to system directories will be removed. /workspace, Pi sessions, and sign-in data are preserved. This cannot be undone.",
+                        "将删除当前 Debian 系统层并重新解压 APK 初始 Rootfs。通过 apt 安装的软件包以及对系统目录的修改都会被清除。/workspace、Pi 会话和登录数据会保留。此操作无法撤销。",
+                        "This deletes the current Debian system layer and extracts the APK initial rootfs. Packages installed with apt and changes to system directories will be removed. /workspace, Pi sessions, and sign-in data are preserved. This cannot be undone.",
                     )
                 )
             },
@@ -645,7 +645,7 @@ fun SettingsPage(
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
                 ) {
-                    Text(language.text("替换环境", "Replace environment"))
+                    Text(language.text("重置 Rootfs", "Reset rootfs"))
                 }
             },
             dismissButton = {
