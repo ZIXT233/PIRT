@@ -95,6 +95,10 @@ The bundled initial Rootfs image is verified with SHA-256 before extraction. The
 
 PIRT is an early project. Back up important files in the workspace before upgrading or experimenting with the runtime. Bug reports and practical feedback are welcome in [Issues](https://github.com/ZIXT233/PIRT/issues).
 
+## License
+
+PIRT is released under the [MIT License](LICENSE).
+
 ## Author
 
 Created and maintained by [ZIXT](https://github.com/ZIXT233).

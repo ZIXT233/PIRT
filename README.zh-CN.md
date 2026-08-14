@@ -95,6 +95,10 @@ Pi 负责会话历史与 Agent 生命周期；PIRT 负责 Android 生命周期�
 
 PIRT 仍处于早期阶段。在升级或尝试修改运行环境前，请备份工作区中的重要文件。欢迎通过 [Issues](https://github.com/ZIXT233/PIRT/issues) 提交问题与实际使用反馈。
 
+## 许可证
+
+PIRT 使用 [MIT License](LICENSE) 发布。
+
 ## 作者
 
 由 [ZIXT](https://github.com/ZIXT233) 发起并维护。
