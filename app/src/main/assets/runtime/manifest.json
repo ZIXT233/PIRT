@@ -3,8 +3,8 @@
     "version": "13.6.0-pirt-1",
     "file": "debian-13.6.0-base-arm64.blob",
     "format": "tar.gz",
-    "size": 372009812,
-    "sha256": "cc33bae09e75e74b4a680e089c09798e2b64a4e3ce07a84401478c3f2a6f8d4c",
+    "size": 390802740,
+    "sha256": "ac4d582572962f3efb5cd2c0bb1b8bea6321ed5d0bb6361fd8376b61eb5be37a",
     "source": "https://www.debian.org/releases/trixie/"
   },
   "toolchain": {
