@@ -4,9 +4,9 @@
 
 [English](README.md) · 简体中文
 
-PIRT 将 Pi 作为原生 Agent 运行时接入，而不是简单套一层命令行。Android 应用直接提供会话创建、管理与恢复，以及服务商与模型配置、上下文用量、Pi 命令和扩展。
+PIRT 为 AI Agent 提供一台真正可以使用的本地 Linux 电脑。所有环境都运行在 Android 手机上：Agent 可以执行命令、处理文件、使用开发工具、运行独立进程并操作 XFCE 图形桌面。
 
-同时，它为 Agent 提供一台真正可以使用的本地 Linux 电脑。所有环境都在手机上运行：Pi 运行在 PRoot 中的 Debian 里，PIRT 将 Agent 运行时、Android 应用生命周期、Shell、桌面和持久化 `/workspace` 整合为同一个系统；工作区文件也可以直接通过 Android 系统文件管理器和其他应用访问。
+PIRT 将 Pi 作为原生 Agent 运行时接入，而不是简单套一层命令行。Android 应用直接提供会话创建、管理与恢复，以及服务商与模型配置、上下文用量、Pi 命令和扩展。Pi 运行在 PRoot 中的 Debian 里，并与 Shell、桌面、Android 系统文件管理器和其他应用共享持久化的 `/workspace`。
 
 [下载最新版 APK](https://github.com/ZIXT233/PIRT/releases/latest)
 
