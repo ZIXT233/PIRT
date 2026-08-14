@@ -4,18 +4,18 @@
 
 [English](README.md) · 简体中文
 
-很多手机 Agent 应用仍然需要远程电脑或云端工作区。PIRT 把执行环境放在手机上：应用内置运行于 PRoot 的 Ubuntu，在其中运行 Pi Coding Agent，并给 Agent 提供可以真实执行命令和读写文件的 `/workspace`。
+很多手机 Agent 应用仍然需要远程电脑或云端工作区。PIRT 把执行环境放在手机上：应用内置运行于 PRoot 的 Debian，在其中运行 Pi Coding Agent，并给 Agent 提供可以真实执行命令和读写文件的 `/workspace`。
 
 PIRT 的 Shell、本地 XFCE 图形桌面和 Android 系统文件管理器访问的是同一个工作区。你可以直接用手机应用编辑、复制或分享这些文件，不需要先从远程电脑下载。
 
 <p align="center">
-  <img src="./screenshot.png" width="360" alt="PIRT 在 Android 手机上识别其本地 Ubuntu 环境">
+  <img src="./screenshot.png" width="360" alt="PIRT 在 Android 手机上识别其本地 Debian 环境">
 </p>
 
 ## 它具体做了什么
 
-- 通过 PRoot 在 ARM64 Android 手机上运行 Ubuntu 24.04，不需要 Root 权限。
-- Pi 与工具都在这个 Ubuntu 环境内运行，命令不会转发到另一台电脑执行。
+- 通过 PRoot 在 ARM64 Android 手机上运行 Debian 13.6，不需要 Root 权限。
+- Pi 与工具都在这个 Debian 环境内运行，命令不会转发到另一台电脑执行。
 - Agent、Shell 和 XFCE 图形桌面共同使用持久化的 `/workspace`。
 - 通过 Android 存储访问框架把工作区暴露给系统文件管理器和兼容应用，操作的是原文件，不是额外副本。
 - 可以启动不依附于会话的后台独立进程，例如长期运行 Minecraft 服务端；可以在 PIRT 的进程列表中查看或停止。
@@ -26,7 +26,7 @@ PIRT 的 Shell、本地 XFCE 图形桌面和 Android 系统文件管理器访问
 
 ## 高阶用法：通过 ADB 操作 Android
 
-把 Android 无线调试显示的配对码和端口提供给 Agent，Agent 即可从 Ubuntu 环境通过 ADB 完成配对，进而检查和操控手机。
+把 Android 无线调试显示的配对码和端口提供给 Agent，Agent 即可从 Debian 环境通过 ADB 完成配对，进而检查和操控手机。
 
 ## 本地环境控制
 
@@ -46,7 +46,7 @@ PIRT 的 Shell、本地 XFCE 图形桌面和 Android 系统文件管理器访问
 
 - Android 7.0 或更高版本
 - ARM64（`arm64-v8a`）设备
-- 足够容纳 APK 与解压后 Ubuntu 环境的存储空间
+- 足够容纳 APK 与解压后 Debian 环境的存储空间
 - 支持的 AI 服务商账号或 API Key
 
 PIRT **不需要 Root 权限**。当前版本将初始 Rootfs 镜像内置在 APK 中，以便离线初始化，因此安装包体积较大。
@@ -74,7 +74,7 @@ Android / Jetpack Compose
           ├── 持久 Shell 与进程
           └── 本地 XFCE 图形桌面
                     │
-             Ubuntu on PRoot
+             Debian on PRoot
                     │
                /workspace
 ```
@@ -85,7 +85,7 @@ Pi 负责会话历史与 Agent 生命周期；PIRT 负责 Android 生命周期�
 
 | 组件 | 版本 |
 | --- | --- |
-| Ubuntu | 24.04.4 LTS |
+| Debian | 13.6 |
 | Pi Coding Agent | 0.84.1 |
 | Node.js | 22.20.0 |
 | Python | 3.12.3 |

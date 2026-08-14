@@ -88,7 +88,7 @@ fun SettingsPage(
     val rootfsBuild = remember(runtime.paths.rootfs) {
         runCatching {
             runtime.paths.rootfs.resolve(".pirt-rootfs-version").readText().trim()
-        }.getOrNull().takeUnless { it.isNullOrBlank() } ?: RuntimeArtifacts.ubuntuArm64.version
+        }.getOrNull().takeUnless { it.isNullOrBlank() } ?: RuntimeArtifacts.debianArm64.version
     }
     val appVersion = remember(context) {
         @Suppress("DEPRECATION")
@@ -565,10 +565,10 @@ fun SettingsPage(
                         EnvironmentVersionRow(language.text("Rootfs 构建版本", "Rootfs build"), rootfsBuild)
                         EnvironmentVersionRow(
                             language.text("初始 Rootfs 镜像 SHA-256", "Initial rootfs image SHA-256"),
-                            RuntimeArtifacts.ubuntuArm64.sha256,
+                            RuntimeArtifacts.debianArm64.sha256,
                             monospace = true,
                         )
-                        EnvironmentVersionRow("Ubuntu", RuntimeArtifacts.UBUNTU_VERSION)
+                        EnvironmentVersionRow("Debian", RuntimeArtifacts.DEBIAN_VERSION)
                         EnvironmentVersionRow("Pi", RuntimeArtifacts.PI_VERSION)
                         EnvironmentVersionRow("PRoot", RuntimeArtifacts.PROOT_VERSION)
                         EnvironmentVersionRow(language.text("软件版本", "App version"), appVersion)

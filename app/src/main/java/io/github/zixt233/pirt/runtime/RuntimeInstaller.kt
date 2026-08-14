@@ -25,16 +25,16 @@ data class RuntimeArtifact(
 )
 
 object RuntimeArtifacts {
-    const val UBUNTU_VERSION = "24.04.4 LTS"
+    const val DEBIAN_VERSION = "13.6"
     const val PI_VERSION = "0.84.1"
     const val PROOT_VERSION = "5.1.107.89"
-    // Built from pinned Ubuntu Base 24.04.4 with the offline PIRT toolchain.
-    val ubuntuArm64 = RuntimeArtifact(
-        version = "24.04.4-pirt-1",
-        url = "https://cdimages.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.4-base-arm64.tar.gz",
-        sha256 = "455e1a02af0496b4389afcae3f2d78acf132fba42a0c06bae6cfd00dbf0ed5e2",
-        size = 326_603_541,
-        assetPath = "runtime/ubuntu-base-24.04.4-base-arm64.blob",
+    // Built from Debian 13.6 (trixie) minbase with the offline PIRT toolchain.
+    val debianArm64 = RuntimeArtifact(
+        version = "13.6.0-pirt-1",
+        url = "https://www.debian.org/releases/trixie/",
+        sha256 = "18230c2df6bb2ee93ff98fe19a5fbf1233a64c68e1853fb89f64b702b6906c73",
+        size = 390_785_764,
+        assetPath = "runtime/debian-13.6.0-base-arm64.blob",
     )
 }
 
@@ -48,10 +48,10 @@ sealed interface InstallState {
     data class Failed(val message: String) : InstallState
 }
 
-/** Installs the bundled and verified Ubuntu rootfs without requiring network access. */
+/** Installs the bundled and verified Debian rootfs without requiring network access. */
 class RuntimeInstaller(private val context: Context, private val paths: RuntimePaths) {
-    private val download = File(paths.root, "downloads/ubuntu-${RuntimeArtifacts.ubuntuArm64.version}-arm64.tar.gz")
-    private val staging = File(paths.root, "ubuntu.installing")
+    private val download = File(paths.root, "downloads/debian-${RuntimeArtifacts.debianArm64.version}-arm64.tar.gz")
+    private val staging = File(paths.root, "debian.installing")
 
     fun install(onState: (InstallState) -> Unit, onLog: (String) -> Unit = {}): Boolean {
         observers += onState
@@ -64,10 +64,10 @@ class RuntimeInstaller(private val context: Context, private val paths: RuntimeP
                 when (next) {
                     is InstallState.Extracting -> {
                         if (next.readBytes == 0L) {
-                            RuntimeDiagnostics.info(context, "installer", "Extracting ${RuntimeArtifacts.ubuntuArm64.version}")
+                            RuntimeDiagnostics.info(context, "installer", "Extracting ${RuntimeArtifacts.debianArm64.version}")
                         }
                     }
-                    InstallState.Complete -> RuntimeDiagnostics.info(context, "installer", "Installed ${RuntimeArtifacts.ubuntuArm64.version}")
+                    InstallState.Complete -> RuntimeDiagnostics.info(context, "installer", "Installed ${RuntimeArtifacts.debianArm64.version}")
                     else -> Unit
                 }
             }
@@ -77,7 +77,7 @@ class RuntimeInstaller(private val context: Context, private val paths: RuntimeP
             }
             try {
                 paths.root.mkdirs()
-                val artifact = RuntimeArtifacts.ubuntuArm64
+                val artifact = RuntimeArtifacts.debianArm64
                 log("PIRT rootfs ${artifact.version}")
                 if (!download.isFile || sha256(download) != artifact.sha256) {
                     log("copying packaged archive (${artifact.size} bytes)")
@@ -93,7 +93,7 @@ class RuntimeInstaller(private val context: Context, private val paths: RuntimeP
                         report(InstallState.Verifying(read, total))
                     } == artifact.sha256,
                 ) {
-                    "Ubuntu archive checksum mismatch"
+                    "Debian archive checksum mismatch"
                 }
                 log("checksum ok")
                 report(InstallState.Extracting(0L, archiveBytes))
@@ -129,7 +129,7 @@ class RuntimeInstaller(private val context: Context, private val paths: RuntimeP
                     deleteTreeInsideRuntime(paths.rootfs)
                 }
                 log("promoting staging rootfs")
-                check(staging.renameTo(paths.rootfs)) { "Could not promote the installed Ubuntu rootfs" }
+                check(staging.renameTo(paths.rootfs)) { "Could not promote the installed Debian rootfs" }
                 log("ready")
                 report(InstallState.Complete)
             } catch (error: Exception) {
@@ -197,7 +197,7 @@ class RuntimeInstaller(private val context: Context, private val paths: RuntimeP
                             lastLoggedMb = mb
                         }
                     }
-                    check(copied == artifact.size) { "Packaged Ubuntu archive has an unexpected size" }
+                    check(copied == artifact.size) { "Packaged Debian archive has an unexpected size" }
                     onLog("copy complete (${copied} bytes)")
                 }
             }
@@ -461,7 +461,7 @@ internal fun resolveArchiveEntry(root: File, name: String): File {
 /** PRoot's link2symlink may encode the old host rootfs path; make it rootfs-relative again. */
 internal fun normalizeRootfsSymlinkTarget(root: File, link: File, target: String): String {
     val normalized = target.replace('\\', '/')
-    val marker = "/pirt/runtime/ubuntu/"
+    val marker = "/pirt/runtime/debian/"
     val markerIndex = normalized.indexOf(marker)
     if (markerIndex < 0) return target
     val rootRelativeTarget = normalized.substring(markerIndex + marker.length)

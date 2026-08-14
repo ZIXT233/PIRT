@@ -4,18 +4,18 @@
 
 English · [简体中文](README.zh-CN.md)
 
-Most mobile agent apps still need a remote computer or cloud workspace. PIRT puts the execution environment on the phone: it bundles Ubuntu on PRoot, runs the Pi coding agent inside it, and gives the agent a real `/workspace` for commands and files.
+Most mobile agent apps still need a remote computer or cloud workspace. PIRT puts the execution environment on the phone: it bundles Debian on PRoot, runs the Pi coding agent inside it, and gives the agent a real `/workspace` for commands and files.
 
 The same workspace is available to PIRT's shell, local XFCE desktop, and Android's system file manager. You can edit, copy or share the files with ordinary phone apps without first moving them out of a remote machine.
 
 <p align="center">
-  <img src="./screenshot.png" width="360" alt="PIRT detecting its local Ubuntu environment on an Android phone">
+  <img src="./screenshot.png" width="360" alt="PIRT detecting its local Debian environment on an Android phone">
 </p>
 
 ## What it does
 
-- Runs Ubuntu 24.04 locally on ARM64 Android devices through PRoot; root access is not required.
-- Runs Pi and its tools inside that Ubuntu environment instead of forwarding commands to another computer.
+- Runs Debian 13.6 locally on ARM64 Android devices through PRoot; root access is not required.
+- Runs Pi and its tools inside that Debian environment instead of forwarding commands to another computer.
 - Stores project files in one persistent `/workspace` shared by the agent, shell and XFCE desktop.
 - Exposes that workspace to Android's Storage Access Framework, so system file managers and compatible apps can use the original files directly.
 - Runs independent background processes that are not tied to a conversation. They can host long-running tasks such as a Minecraft server, and can be viewed or stopped from PIRT's process list.
@@ -26,7 +26,7 @@ The practical difference is where the work happens. A remote-agent workflow need
 
 ## Advanced use: Android over ADB
 
-Provide the Agent with the pairing code and ports shown by Android Wireless debugging. The Agent can then pair through ADB from the Ubuntu environment and control the phone for device inspection and automation.
+Provide the Agent with the pairing code and ports shown by Android Wireless debugging. The Agent can then pair through ADB from the Debian environment and control the phone for device inspection and automation.
 
 ## Local runtime controls
 
@@ -46,7 +46,7 @@ Provide the Agent with the pairing code and ports shown by Android Wireless debu
 
 - Android 7.0 or later
 - An ARM64 (`arm64-v8a`) device
-- Enough free storage for the APK and the extracted Ubuntu environment
+- Enough free storage for the APK and the extracted Debian environment
 - An account or API key for a supported AI provider
 
 PIRT does **not** require root access. The current release is distributed as a large APK because the initial Rootfs image is bundled for offline installation.
@@ -74,7 +74,7 @@ Android / Jetpack Compose
           ├── persistent shell and processes
           └── local XFCE desktop
                     │
-             Ubuntu on PRoot
+             Debian on PRoot
                     │
                /workspace
 ```
@@ -85,7 +85,7 @@ Pi owns the conversation history and agent lifecycle. PIRT owns the Android life
 
 | Component | Version |
 | --- | --- |
-| Ubuntu | 24.04.4 LTS |
+| Debian | 13.6 |
 | Pi coding agent | 0.84.1 |
 | Node.js | 22.20.0 |
 | Python | 3.12.3 |

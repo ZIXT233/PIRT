@@ -2,7 +2,7 @@
 
 [English](architecture.md) · 简体中文
 
-PIRT 把运行在应用私有 Ubuntu PRoot 环境中的 Pi 投射为 Android 应用。Pi 负责会话；PIRT 负责 Android 生命周期、共享工作区和移动端呈现。
+PIRT 把运行在应用私有 Debian PRoot 环境中的 Pi 投射为 Android 应用。Pi 负责会话；PIRT 负责 Android 生命周期、共享工作区和移动端呈现。
 
 ## 组件归属
 
@@ -30,7 +30,7 @@ flowchart TD
     BRIDGE --> JSONL
 ```
 
-Android 端没有会话数据库，也没有 `workspace.json`。固定工作区是 `files/pirt/workspace`；Ubuntu Rootfs 中的 Pi JSONL 是唯一持久化会话目录和历史。
+Android 端没有会话数据库，也没有 `workspace.json`。固定工作区是 `files/pirt/workspace`；Debian Rootfs 中的 Pi JSONL 是唯一持久化会话目录和历史。
 
 `RuntimeService` 通过 `PiControlClient` 持有一个常驻的 PRoot/Node 进程。该进程只加载一次 Pi SDK，并持有认证、模型、会话目录和所有活动的 `AgentSessionRuntime`。打开或切换会话不会创建新的系统进程。Activity 通过 `RuntimeConnection` 绑定服务，Compose 页面不持有 Node 进程或 SDK 会话。
 
@@ -96,7 +96,7 @@ flowchart LR
 files/pirt/
   workspace/                         宿主共享工作区
   runtime/
-    ubuntu/
+    debian/
       root/.pi/pirt-sessions/*.jsonl Pi 会话目录与历史
       root/.pi/agent/                 Pi 设置与凭据
     native-links/

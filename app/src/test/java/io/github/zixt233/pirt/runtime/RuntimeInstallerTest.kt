@@ -50,7 +50,7 @@ class RuntimeInstallerTest {
             normalizeRootfsSymlinkTarget(
                 root,
                 link,
-                "/data/user/0/io.github.zixt233.pirt/files/pirt/runtime/ubuntu/usr/bin/.l2s.perlbug.dpkg-new0001",
+                "/data/user/0/io.github.zixt233.pirt/files/pirt/runtime/debian/usr/bin/.l2s.perlbug.dpkg-new0001",
             ),
         )
     }

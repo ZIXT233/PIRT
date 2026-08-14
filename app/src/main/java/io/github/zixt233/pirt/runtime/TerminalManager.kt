@@ -90,7 +90,7 @@ class TerminalManager(
             process = child
             writer = BufferedWriter(OutputStreamWriter(child.outputStream, StandardCharsets.UTF_8))
             _state.update { it.copy(started = true, error = null) }
-            append("PIRT Ubuntu · workspace\n")
+            append("PIRT Debian · workspace\n")
             onActivityChanged()
             Thread({ readOutput(child) }, "pirt-terminal").apply { isDaemon = true }.start()
         }.onFailure { error ->

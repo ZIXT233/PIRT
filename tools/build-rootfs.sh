@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Reproducible PIRT arm64 rootfs from official Ubuntu Base + pinned apt/npm packages.
-# Requires: Ubuntu/Debian x86_64 host, sudo, curl, tar, qemu-user-static.
+# Reproducible PIRT arm64 rootfs from Debian 13 (trixie) minbase + pinned apt/npm packages.
+# Requires: Debian/Ubuntu host (or Docker), sudo, curl, tar, debootstrap.
+# On non-aarch64 hosts also needs qemu-user-static.
 #
 # Usage:
 #   tools/build-rootfs.sh [output.tar.gz]
@@ -37,10 +38,11 @@ APT_PACKAGES=(
   tigervnc-standalone-server
   tigervnc-tools
   dbus-x11
-  xterm
+  xfce4-terminal
   xfonts-base
   novnc
   websockify
+  xdg-utils
 )
 
 log() { printf '==> %s\n' "$*"; }
@@ -93,13 +95,15 @@ setup_host() {
   need_cmd sudo
   export DEBIAN_FRONTEND=noninteractive
   sudo apt-get update -qq
+  local host_pkgs=(ca-certificates debootstrap debian-archive-keyring xz-utils)
   if [[ "$NATIVE_AARCH64" -eq 1 ]]; then
-    sudo apt-get install -y -qq ca-certificates >/dev/null
+    sudo apt-get install -y -qq "${host_pkgs[@]}" >/dev/null
     log "native aarch64 host — skipping qemu-user-static"
   else
-    sudo apt-get install -y -qq qemu-user-static binfmt-support ca-certificates >/dev/null
+    sudo apt-get install -y -qq "${host_pkgs[@]}" qemu-user-static binfmt-support >/dev/null
     sudo update-binfmts --enable qemu-aarch64 >/dev/null 2>&1 || true
   fi
+  need_cmd debootstrap
 }
 
 mount_chroot() {
@@ -117,33 +121,39 @@ umount_chroot() {
   sudo umount -lf "$ROOTFS/dev" 2>/dev/null || true
 }
 
+bootstrap_debian() {
+  log "debootstrap Debian ${DEBIAN_RELEASE} (${DEBIAN_CODENAME}/${DEBIAN_ARCH}) minbase"
+  local args=(--arch="$DEBIAN_ARCH" --variant=minbase "$DEBIAN_CODENAME" "$ROOTFS" "$DEBIAN_MIRROR")
+  if [[ "$NATIVE_AARCH64" -ne 1 ]]; then
+    # First stage only; second stage runs under qemu-aarch64-static.
+    sudo debootstrap --foreign "${args[@]}"
+    sudo cp /usr/bin/qemu-aarch64-static "$ROOTFS/usr/bin/"
+    mount_chroot
+    trap umount_chroot EXIT
+    run_chroot /debootstrap/debootstrap --second-stage
+  else
+    sudo debootstrap "${args[@]}"
+    mount_chroot
+    trap umount_chroot EXIT
+  fi
+  test -x "$ROOTFS/bin/bash" || { echo "debootstrap rootfs is incomplete" >&2; exit 1; }
+}
+
 main() {
   mkdir -p "$CACHE" "$STAGING"
   rm -rf "$ROOTFS"
   mkdir -p "$ROOTFS"
 
   setup_host
+  bootstrap_debian
 
-  local base="$CACHE/ubuntu-base-${UBUNTU_RELEASE}-${UBUNTU_ARCH}.tar.gz"
-  fetch "$UBUNTU_BASE_URL" "$base" "$UBUNTU_BASE_SHA256"
-
-  log "extract official Ubuntu Base ${UBUNTU_RELEASE} (${UBUNTU_ARCH})"
-  tar -xzf "$base" -C "$ROOTFS"
-  test -x "$ROOTFS/bin/bash" || { echo "extracted rootfs is incomplete" >&2; exit 1; }
-
-  if [[ "$NATIVE_AARCH64" -ne 1 ]]; then
-    sudo cp /usr/bin/qemu-aarch64-static "$ROOTFS/usr/bin/"
-  fi
-  mount_chroot
-  trap umount_chroot EXIT
-
-  log "configure apt sources (ports)"
+  log "configure apt sources"
   cat <<EOF | sudo tee "$ROOTFS/etc/apt/sources.list" >/dev/null
-deb ${UBUNTU_PORTS} ${UBUNTU_CODENAME} main restricted universe multiverse
-deb ${UBUNTU_PORTS} ${UBUNTU_CODENAME}-updates main restricted universe multiverse
-deb ${UBUNTU_PORTS} ${UBUNTU_CODENAME}-security main restricted universe multiverse
+deb ${DEBIAN_MIRROR} ${DEBIAN_CODENAME} main contrib non-free non-free-firmware
+deb ${DEBIAN_MIRROR} ${DEBIAN_CODENAME}-updates main contrib non-free non-free-firmware
+deb ${DEBIAN_SECURITY} ${DEBIAN_CODENAME}-security main contrib non-free non-free-firmware
 EOF
-  # Skip Translation-* indexes (tens–hundreds of MB) and recommends by default.
+  # Skip Translation-* indexes and recommends by default.
   sudo mkdir -p "$ROOTFS/etc/apt/apt.conf.d"
   cat <<'EOF' | sudo tee "$ROOTFS/etc/apt/apt.conf.d/99pirt-build" >/dev/null
 Acquire::Languages "none";
@@ -170,6 +180,8 @@ EOF
   run_chroot test -x /usr/local/bin/pi
   run_chroot test -x /usr/bin/startxfce4
   run_chroot test -x /usr/bin/Xtigervnc
+  run_chroot test -x /usr/bin/xdg-open
+  run_chroot test -x /usr/bin/xfce4-terminal
 
   log "trim caches"
   run_chroot apt-get clean
@@ -190,10 +202,10 @@ EOF
   tar -tzf "$OUTPUT" >/dev/null
   test -x "$ROOTFS/bin/bash"
 
-  local digest size
+  local digest archive_size
   digest="$(sha256_file "$OUTPUT")"
-  size="$(wc -c < "$OUTPUT" | tr -d ' ')"
-  printf '{"version":"%s","size":%s,"sha256":"%s"}\n' "$PIRT_ROOTFS_VERSION" "$size" "$digest"
+  archive_size="$(wc -c < "$OUTPUT" | tr -d '[:space:]')"
+  printf '{"version":"%s","size":%s,"sha256":"%s"}\n' "$PIRT_ROOTFS_VERSION" "$archive_size" "$digest"
 }
 
 main "$@"

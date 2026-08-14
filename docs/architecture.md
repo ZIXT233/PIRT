@@ -2,7 +2,7 @@
 
 English · [简体中文](architecture.zh-CN.md)
 
-PIRT is an Android projection of Pi running in one app-private Ubuntu PRoot environment. Pi owns conversations; PIRT owns the Android lifecycle, the shared workspace, and presentation.
+PIRT is an Android projection of Pi running in one app-private Debian PRoot environment. Pi owns conversations; PIRT owns the Android lifecycle, the shared workspace, and presentation.
 
 ## Ownership
 
@@ -30,7 +30,7 @@ flowchart TD
     BRIDGE --> JSONL
 ```
 
-There is no Android conversation database and no `workspace.json`. The fixed workspace is `files/pirt/workspace`. Pi JSONL under the Ubuntu rootfs is the only persisted conversation catalog and history.
+There is no Android conversation database and no `workspace.json`. The fixed workspace is `files/pirt/workspace`. Pi JSONL under the Debian rootfs is the only persisted conversation catalog and history.
 
 `RuntimeService` owns one resident PRoot/Node process through `PiControlClient`. That process imports the Pi SDK once and owns authentication, models, the catalog, and all live `AgentSessionRuntime` instances. Opening or switching conversations does not create another OS process. Activities bind through `RuntimeConnection`; Compose never owns the Node process or SDK sessions.
 
@@ -96,7 +96,7 @@ For every new Pi-related feature, check the pinned Pi source first. If Pi alread
 files/pirt/
   workspace/                         shared host workspace
   runtime/
-    ubuntu/
+    debian/
       root/.pi/pirt-sessions/*.jsonl Pi-owned catalog and history
       root/.pi/agent/                 Pi settings and credentials
     native-links/

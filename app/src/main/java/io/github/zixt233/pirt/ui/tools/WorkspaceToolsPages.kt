@@ -68,7 +68,7 @@ fun TerminalPage(workspace: WorkspaceConfig, connection: RuntimeConnection) {
 
     Column(Modifier.fillMaxSize().padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Ubuntu · workspace", fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            Text("Debian · workspace", fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
             TextButton(onClick = { manager?.clear() }) { Text(language.text("清屏", "Clear")) }
             TextButton(onClick = { manager?.reset() }) { Text(if (state.running) language.text("停止", "Stop") else language.text("重置", "Reset")) }
         }

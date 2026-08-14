@@ -26,8 +26,8 @@ data class RuntimePaths(
             return RuntimePaths(
                 root = root,
                 proot = File(context.applicationInfo.nativeLibraryDir, "libproot_exec.so"),
-                rootfs = File(root, "ubuntu"),
-                sessions = File(root, "ubuntu/root/.pi/pirt-sessions"),
+                rootfs = File(root, "debian"),
+                sessions = File(root, "debian/root/.pi/pirt-sessions"),
                 loader = File(context.applicationInfo.nativeLibraryDir, "libproot_loader.so"),
                 nativeLibraryDir = File(context.applicationInfo.nativeLibraryDir),
                 nativeLinkDir = File(root, "native-links"),
@@ -60,7 +60,7 @@ class PRootRuntime(context: Context) {
             .takeIf(File::isFile)
             ?.readText()
             ?.trim()
-        if (installedVersion != RuntimeArtifacts.ubuntuArm64.version) {
+        if (installedVersion != RuntimeArtifacts.debianArm64.version) {
             return RuntimeState.NotInstalled("本地开发环境需要更新")
         }
         if (!prepareSupportFiles()) {
@@ -74,6 +74,7 @@ class PRootRuntime(context: Context) {
             !File(paths.rootfs, "usr/bin/startxfce4").isFile ||
             !File(paths.rootfs, "usr/bin/websockify").isFile ||
             !File(paths.rootfs, "usr/share/novnc/vnc.html").isFile ||
+            !File(paths.rootfs, "usr/bin/xdg-open").isFile ||
             !File(paths.rootfs, "usr/local/lib/pirt/pirt-control-bridge.mjs").isFile
         ) {
             return RuntimeState.NotInstalled("开发工具安装不完整")
@@ -82,7 +83,7 @@ class PRootRuntime(context: Context) {
     }
 
     fun piAgentHostProcess(workspace: WorkspaceConfig): RuntimeProcessSpec {
-        check(state() is RuntimeState.Ready) { "Ubuntu runtime is not ready" }
+        check(state() is RuntimeState.Ready) { "Debian runtime is not ready" }
         // The packaged rootfs is built in Docker, so its resolv.conf contains the
         // builder's private DNS server. Keep the guest resolver aligned with the
         // Android network before Node performs OAuth or model API requests.
@@ -134,7 +135,7 @@ class PRootRuntime(context: Context) {
     }
 
     fun provisionWorkspace(workspace: WorkspaceConfig): Result<Unit> = runCatching {
-        check(state() is RuntimeState.Ready) { "Ubuntu runtime is not ready" }
+        check(state() is RuntimeState.Ready) { "Debian runtime is not ready" }
         workspace(workspace)
     }
 
