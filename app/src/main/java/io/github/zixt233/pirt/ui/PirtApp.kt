@@ -107,7 +107,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -176,6 +175,7 @@ import io.github.zixt233.pirt.runtime.pi.PiSessionSummary
 import io.github.zixt233.pirt.runtime.pi.ProcessState
 import io.github.zixt233.pirt.runtime.pi.TurnState
 import io.github.zixt233.pirt.ui.app.AppViewModel
+import io.github.zixt233.pirt.ui.app.PendingConversation
 import io.github.zixt233.pirt.ui.chat.ChatViewModel
 import io.github.zixt233.pirt.ui.chat.ChatUiState
 import io.github.zixt233.pirt.ui.settings.OverlayPermissionPrompt
@@ -201,7 +201,6 @@ import kotlinx.coroutines.withContext
 
 private enum class Page { CHAT, GRAPHICS, PROCESSES, SETTINGS }
 private const val COLLAPSED_SESSION_COUNT = 10
-private data class PendingConversation(val session: PiSession, val piId: String? = null)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -225,12 +224,13 @@ fun PirtApp() {
     var onboardingDone by rememberSaveable {
         mutableStateOf(uiPrefs.getBoolean("onboarding_done", false))
     }
-    var newConversation by remember { mutableStateOf(appViewModel.newSession()) }
-    var sessionId by rememberSaveable { mutableStateOf<String?>(null) }
-    var newConversationText by rememberSaveable { mutableStateOf("") }
-    var newConversationPiId by remember { mutableStateOf<String?>(null) }
-    val pendingConversations = remember { mutableStateListOf<PendingConversation>() }
-    val conversationDrafts = remember { mutableStateMapOf<String, String>() }
+    val conversationUi = appViewModel.conversationUi
+    var newConversation by conversationUi.newConversation
+    var sessionId by conversationUi.selectedSessionId
+    var newConversationText by conversationUi.newConversationText
+    var newConversationPiId by conversationUi.newConversationPiId
+    val pendingConversations = conversationUi.pendingConversations
+    val conversationDrafts = conversationUi.drafts
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
