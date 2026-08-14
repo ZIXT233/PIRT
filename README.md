@@ -4,7 +4,7 @@
 
 English · [简体中文](README.zh-CN.md)
 
-PIRT gives an AI Agent a local Linux computer it can actually use. Everything runs on your Android phone: the Agent can execute commands, work with files, use development tools, run independent processes and operate an XFCE desktop.
+PIRT is an AI Agent with a complete local Linux execution environment built in. It can execute commands, work with files, use development tools, run independent processes and operate an XFCE desktop—all on your Android phone.
 
 PIRT integrates Pi as its native Agent runtime instead of wrapping its command-line interface. The Android app directly provides conversation and session management, history recovery, provider and model configuration, context usage, Pi commands and extensions. Pi runs inside Debian on PRoot, sharing the persistent `/workspace` with the shell, desktop, Android system file manager and other apps.
 
