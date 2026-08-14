@@ -6,11 +6,9 @@
 
 PIRT 给 Android 手机提供一套 AI Agent 可以实际使用的本地 Linux 环境：执行命令、处理文件、使用开发工具，并操作 XFCE 图形桌面。
 
-所有环境都在手机上运行。Pi 运行在 PRoot 中的 Debian 里，Agent、Shell 和桌面共享同一个持久化 `/workspace`；其中的文件也可以直接通过 Android 系统文件管理器和其他应用访问。
+所有环境都在手机上运行。Pi 运行在 PRoot 中的 Debian 里，PIRT 将 Agent 运行时、Android 应用生命周期、Shell、桌面和持久化 `/workspace` 整合为同一个系统；工作区文件也可以直接通过 Android 系统文件管理器和其他应用访问。
 
-**技术栈：** Pi + Debian + PRoot
-
-[下载最新版 APK](https://github.com/ZIXT233/PIRT/releases/latest) · [查看源码并 Star PIRT](https://github.com/ZIXT233/PIRT)
+[下载最新版 APK](https://github.com/ZIXT233/PIRT/releases/latest)
 
 <p align="center">
   <img src="./screenshot.png" width="360" alt="PIRT 在 Android 手机上识别其本地 Debian 环境">
