@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.res.Configuration
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -84,6 +85,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -135,6 +137,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
@@ -559,13 +562,22 @@ private fun WorkspaceDrawer(
     var expanded by rememberSaveable { mutableStateOf(false) }
     val sessionListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val useFixedDrawerWidth = isLandscape || configuration.screenWidthDp >= 600
+    val featureItems = listOf(
+        DrawerFeatureItem(language.text("文件", "Files"), Icons.Outlined.FolderOpen, onFiles),
+        DrawerFeatureItem(language.text("桌面", "Desktop"), Icons.Outlined.DesktopWindows, onGraphics),
+        DrawerFeatureItem(language.text("进程管理", "Processes"), Icons.Outlined.AccountTree, onProcesses),
+        DrawerFeatureItem(language.text("悬浮窗", "Overlay"), Icons.Outlined.PictureInPictureAlt, onOverlay, active = overlayActive),
+    )
     ModalDrawerSheet(
-        modifier = Modifier.fillMaxWidth(0.88f),
+        modifier = if (useFixedDrawerWidth) Modifier.width(520.dp) else Modifier.fillMaxWidth(0.88f),
         drawerContainerColor = MaterialTheme.colorScheme.background,
     ) {
         Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
             Row(
-                Modifier.fillMaxWidth().padding(top = 18.dp, bottom = 16.dp),
+                Modifier.fillMaxWidth().padding(top = if (isLandscape) 12.dp else 18.dp, bottom = if (isLandscape) 12.dp else 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Surface(
@@ -606,106 +618,60 @@ private fun WorkspaceDrawer(
                     Icon(Icons.Outlined.Settings, contentDescription = language.text("设置", "Settings"), modifier = Modifier.size(22.dp))
                 }
             }
-            DrawerFeatureGrid(
-                items = listOf(
-                    DrawerFeatureItem(language.text("文件", "Files"), Icons.Outlined.FolderOpen, onFiles),
-                    DrawerFeatureItem(language.text("桌面", "Desktop"), Icons.Outlined.DesktopWindows, onGraphics),
-                    DrawerFeatureItem(language.text("进程管理", "Processes"), Icons.Outlined.AccountTree, onProcesses),
-                    DrawerFeatureItem(language.text("悬浮窗", "Overlay"), Icons.Outlined.PictureInPictureAlt, onOverlay, active = overlayActive),
-                ),
-            )
-            HorizontalDivider(Modifier.padding(top = 18.dp, bottom = 18.dp))
-            Row(
-                Modifier.fillMaxWidth().padding(horizontal = 2.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(language.text("会话", "Conversations"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.weight(1f))
-                if (sessionsLoaded) {
-                    Text(
-                        "${sessions.size}",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            LazyColumn(
-                state = sessionListState,
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(top = 12.dp, bottom = 18.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                item(key = "new-conversation") {
-                    NewConversationDrawerRow(
-                        selected = draftSelected,
-                        hasText = draftHasText,
-                        onOpen = {
+            if (isLandscape) {
+                Row(Modifier.fillMaxWidth().weight(1f)) {
+                    DrawerFeatureRail(featureItems, Modifier.width(86.dp))
+                    VerticalDivider(Modifier.padding(horizontal = 12.dp))
+                    DrawerConversationPane(
+                        modifier = Modifier.weight(1f),
+                        sessions = sessions,
+                        sessionsLoaded = sessionsLoaded,
+                        summaries = summaries,
+                        selectedSessionId = selectedSessionId,
+                        draftSelected = draftSelected,
+                        draftHasText = draftHasText,
+                        expanded = expanded,
+                        menuSessionId = menuSessionId,
+                        sessionListState = sessionListState,
+                        onOpenDraft = {
                             onOpenDraft()
                             scope.launch { sessionListState.scrollToItem(0) }
                         },
-                    )
-                }
-                if (!sessionsLoaded) {
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                            Spacer(Modifier.width(10.dp))
-                            Text(language.text("正在读取 PIRT 会话……", "Loading PIRT conversations…"), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                } else if (sessions.isEmpty()) {
-                    item {
-                        Text(
-                            language.text("暂无历史会话", "No conversation history"),
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 16.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                items(sessions.take(COLLAPSED_SESSION_COUNT), key = { it.runtimeKey }) { session ->
-                    ConversationDrawerRow(
-                        session = session,
-                        selected = session.runtimeKey == selectedSessionId,
-                        activity = summaries[session.runtimeKey],
-                        menuExpanded = menuSessionId == session.runtimeKey,
-                        onOpen = { onOpenSession(session) },
-                        onMenu = { menuSessionId = session.runtimeKey },
+                        onOpenSession = onOpenSession,
+                        onToggleExpanded = { expanded = !expanded },
+                        onMenu = { menuSessionId = it.runtimeKey },
                         onDismissMenu = { menuSessionId = null },
-                        onRename = { menuSessionId = null; renameTarget = session },
-                        onInfo = { menuSessionId = null; infoTarget = session },
-                        onDelete = { menuSessionId = null; deleteTarget = session },
+                        onRename = { menuSessionId = null; renameTarget = it },
+                        onInfo = { menuSessionId = null; infoTarget = it },
+                        onDelete = { menuSessionId = null; deleteTarget = it },
                     )
                 }
-                if (sessions.size > COLLAPSED_SESSION_COUNT) {
-                    item(key = "session-list-toggle") {
-                        TextButton(onClick = { expanded = !expanded }, modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                if (expanded) language.text("收起", "Collapse") else language.text("显示其余 ${sessions.size - COLLAPSED_SESSION_COUNT} 个会话", "Show ${sessions.size - COLLAPSED_SESSION_COUNT} more"),
-                                modifier = Modifier.fillMaxWidth(),
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                        }
-                    }
-                }
-                if (expanded) {
-                    items(sessions.drop(COLLAPSED_SESSION_COUNT), key = { it.runtimeKey }) { session ->
-                        ConversationDrawerRow(
-                            session = session,
-                            selected = session.runtimeKey == selectedSessionId,
-                            activity = summaries[session.runtimeKey],
-                            menuExpanded = menuSessionId == session.runtimeKey,
-                            onOpen = { onOpenSession(session) },
-                            onMenu = { menuSessionId = session.runtimeKey },
-                            onDismissMenu = { menuSessionId = null },
-                            onRename = { menuSessionId = null; renameTarget = session },
-                            onInfo = { menuSessionId = null; infoTarget = session },
-                            onDelete = { menuSessionId = null; deleteTarget = session },
-                        )
-                    }
-                }
+            } else {
+                DrawerFeatureGrid(featureItems)
+                HorizontalDivider(Modifier.padding(top = 18.dp, bottom = 18.dp))
+                DrawerConversationPane(
+                    modifier = Modifier.weight(1f),
+                    sessions = sessions,
+                    sessionsLoaded = sessionsLoaded,
+                    summaries = summaries,
+                    selectedSessionId = selectedSessionId,
+                    draftSelected = draftSelected,
+                    draftHasText = draftHasText,
+                    expanded = expanded,
+                    menuSessionId = menuSessionId,
+                    sessionListState = sessionListState,
+                    onOpenDraft = {
+                        onOpenDraft()
+                        scope.launch { sessionListState.scrollToItem(0) }
+                    },
+                    onOpenSession = onOpenSession,
+                    onToggleExpanded = { expanded = !expanded },
+                    onMenu = { menuSessionId = it.runtimeKey },
+                    onDismissMenu = { menuSessionId = null },
+                    onRename = { menuSessionId = null; renameTarget = it },
+                    onInfo = { menuSessionId = null; infoTarget = it },
+                    onDelete = { menuSessionId = null; deleteTarget = it },
+                )
             }
             HorizontalDivider()
             Text(
@@ -994,6 +960,164 @@ private fun DrawerFeatureGrid(items: List<DrawerFeatureItem>) {
     ) {
         items(items, key = { it.label }) { item ->
             IconGridCell(item.label, item.icon, item.onClick, item.active)
+        }
+    }
+}
+
+@Composable
+private fun DrawerFeatureRail(items: List<DrawerFeatureItem>, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.verticalScroll(rememberScrollState()).padding(top = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        items.forEach { item ->
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth().clickable(onClick = item.onClick),
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(13.dp),
+                    color = if (item.active) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+                    tonalElevation = 2.dp,
+                    border = BorderStroke(
+                        1.dp,
+                        if (item.active) MaterialTheme.colorScheme.primary.copy(alpha = 0.55f) else MaterialTheme.colorScheme.outlineVariant,
+                    ),
+                    modifier = Modifier.size(48.dp),
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.label,
+                            modifier = Modifier.size(22.dp),
+                            tint = if (item.active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    item.label,
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DrawerConversationPane(
+    sessions: List<PiSession>,
+    sessionsLoaded: Boolean,
+    summaries: Map<String, PiSessionSummary>,
+    selectedSessionId: String?,
+    draftSelected: Boolean,
+    draftHasText: Boolean,
+    expanded: Boolean,
+    menuSessionId: String?,
+    sessionListState: LazyListState,
+    onOpenDraft: () -> Unit,
+    onOpenSession: (PiSession) -> Unit,
+    onToggleExpanded: () -> Unit,
+    onMenu: (PiSession) -> Unit,
+    onDismissMenu: () -> Unit,
+    onRename: (PiSession) -> Unit,
+    onInfo: (PiSession) -> Unit,
+    onDelete: (PiSession) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val language = LocalAppLanguage.current
+    Column(modifier) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(language.text("会话", "Conversations"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.weight(1f))
+            if (sessionsLoaded) {
+                Text(
+                    "${sessions.size}",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        LazyColumn(
+            state = sessionListState,
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(top = 12.dp, bottom = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item(key = "new-conversation") {
+                NewConversationDrawerRow(
+                    selected = draftSelected,
+                    hasText = draftHasText,
+                    onOpen = onOpenDraft,
+                )
+            }
+            if (!sessionsLoaded) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.width(10.dp))
+                        Text(language.text("正在读取 PIRT 会话……", "Loading PIRT conversations…"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            } else if (sessions.isEmpty()) {
+                item {
+                    Text(
+                        language.text("暂无历史会话", "No conversation history"),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 16.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            items(sessions.take(COLLAPSED_SESSION_COUNT), key = { it.runtimeKey }) { session ->
+                ConversationDrawerRow(
+                    session = session,
+                    selected = session.runtimeKey == selectedSessionId,
+                    activity = summaries[session.runtimeKey],
+                    menuExpanded = menuSessionId == session.runtimeKey,
+                    onOpen = { onOpenSession(session) },
+                    onMenu = { onMenu(session) },
+                    onDismissMenu = onDismissMenu,
+                    onRename = { onRename(session) },
+                    onInfo = { onInfo(session) },
+                    onDelete = { onDelete(session) },
+                )
+            }
+            if (sessions.size > COLLAPSED_SESSION_COUNT) {
+                item(key = "session-list-toggle") {
+                    TextButton(onClick = onToggleExpanded, modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            if (expanded) language.text("收起", "Collapse") else language.text("显示其余 ${sessions.size - COLLAPSED_SESSION_COUNT} 个会话", "Show ${sessions.size - COLLAPSED_SESSION_COUNT} more"),
+                            modifier = Modifier.fillMaxWidth(),
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
+            }
+            if (expanded) {
+                items(sessions.drop(COLLAPSED_SESSION_COUNT), key = { it.runtimeKey }) { session ->
+                    ConversationDrawerRow(
+                        session = session,
+                        selected = session.runtimeKey == selectedSessionId,
+                        activity = summaries[session.runtimeKey],
+                        menuExpanded = menuSessionId == session.runtimeKey,
+                        onOpen = { onOpenSession(session) },
+                        onMenu = { onMenu(session) },
+                        onDismissMenu = onDismissMenu,
+                        onRename = { onRename(session) },
+                        onInfo = { onInfo(session) },
+                        onDelete = { onDelete(session) },
+                    )
+                }
+            }
         }
     }
 }
