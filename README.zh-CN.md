@@ -1,12 +1,16 @@
-# PIRT
+# PIRT — Pi Runtime on PRoot
 
-**掌上虚拟电脑Agent**
+**一台装在手机里的 AI Linux 电脑。**
 
 [English](README.md) · 简体中文
 
-很多手机 Agent 应用仍然需要远程电脑或云端工作区。PIRT 把执行环境放在手机上：应用内置运行于 PRoot 的 Debian，在其中运行 Pi Coding Agent，并给 Agent 提供可以真实执行命令和读写文件的 `/workspace`。
+PIRT 给 Android 手机提供一套 AI Agent 可以实际使用的本地 Linux 环境：执行命令、处理文件、使用开发工具，并操作 XFCE 图形桌面。
 
-PIRT 的 Shell、本地 XFCE 图形桌面和 Android 系统文件管理器访问的是同一个工作区。你可以直接用手机应用编辑、复制或分享这些文件，不需要先从远程电脑下载。
+所有环境都在手机上运行。Pi 运行在 PRoot 中的 Debian 里，Agent、Shell 和桌面共享同一个持久化 `/workspace`；其中的文件也可以直接通过 Android 系统文件管理器和其他应用访问。
+
+**技术栈：** Pi + Debian + PRoot
+
+[下载最新版 APK](https://github.com/ZIXT233/PIRT/releases/latest) · [查看源码并 Star PIRT](https://github.com/ZIXT233/PIRT)
 
 <p align="center">
   <img src="./screenshot.png" width="360" alt="PIRT 在 Android 手机上识别其本地 Debian 环境">
@@ -88,8 +92,8 @@ Pi 负责会话历史与 Agent 生命周期；PIRT 负责 Android 生命周期�
 | Debian | 13.6 |
 | Pi Coding Agent | 0.84.1 |
 | Node.js | 22.20.0 |
-| Python | 3.12.3 |
-| XFCE | 4.18 |
+| Python | 3.13 |
+| XFCE | 4.20 |
 | PRoot | 5.1.107.89 |
 
 应用会在解压前使用 SHA-256 校验内置的初始 Rootfs 镜像。安装后的环境允许写入，因此这个校验值不代表使用过程中 Rootfs 始终保持不变。可以按照 [Rootfs 构建文档](docs/rootfs-build.zh-CN.md) 从公开源重新构建镜像。

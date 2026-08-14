@@ -1,12 +1,16 @@
-# PIRT
+# PIRT — Pi Runtime on PRoot
 
-**Pi Runtime on PRoot — A pocket virtual computer agent.**
+**An AI-powered Linux computer in your pocket.**
 
 English · [简体中文](README.zh-CN.md)
 
-Most mobile agent apps still need a remote computer or cloud workspace. PIRT puts the execution environment on the phone: it bundles Debian on PRoot, runs the Pi coding agent inside it, and gives the agent a real `/workspace` for commands and files.
+PIRT gives your Android phone a local Linux environment that an AI Agent can actually use: run commands, work with files, use development tools and operate an XFCE desktop.
 
-The same workspace is available to PIRT's shell, local XFCE desktop, and Android's system file manager. You can edit, copy or share the files with ordinary phone apps without first moving them out of a remote machine.
+Everything runs on the phone. Pi works inside Debian on PRoot, and the Agent, shell and desktop share the same persistent `/workspace`. Its files are also directly available to Android's system file manager and other apps.
+
+**Stack:** Pi + Debian + PRoot
+
+[Download the latest APK](https://github.com/ZIXT233/PIRT/releases/latest) · [View the source and star PIRT](https://github.com/ZIXT233/PIRT)
 
 <p align="center">
   <img src="./screenshot.png" width="360" alt="PIRT detecting its local Debian environment on an Android phone">
@@ -88,8 +92,8 @@ Pi owns the conversation history and agent lifecycle. PIRT owns the Android life
 | Debian | 13.6 |
 | Pi coding agent | 0.84.1 |
 | Node.js | 22.20.0 |
-| Python | 3.12.3 |
-| XFCE | 4.18 |
+| Python | 3.13 |
+| XFCE | 4.20 |
 | PRoot | 5.1.107.89 |
 
 The bundled initial Rootfs image is verified with SHA-256 before extraction. The installed environment is writable, so the initial image checksum is not a checksum of the environment after use. See the [Rootfs build guide](docs/rootfs-build.md) to rebuild the image from public sources.
