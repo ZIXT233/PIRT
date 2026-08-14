@@ -11,7 +11,9 @@ PIRT 给 Android 手机提供一套 AI Agent 可以实际使用的本地 Linux �
 [下载最新版 APK](https://github.com/ZIXT233/PIRT/releases/latest)
 
 <p align="center">
-  <img src="./screenshot.png" width="360" alt="PIRT 在 Android 手机上识别其本地 Debian 环境">
+  <img src="./screenshot-desktop.jpg" width="360" alt="PIRT 与 aVNC 在 Android 分屏模式下同时运行">
+  <br>
+  <sub>PIRT 与 aVNC 分屏运行；同一桌面也可以通过浏览器 noVNC 打开。</sub>
 </p>
 
 ## 它具体做了什么
@@ -37,12 +39,6 @@ PIRT 给 Android 手机提供一套 AI Agent 可以实际使用的本地 Linux �
 - 会话管理、上下文与 Token 使用量及 HTML 导出
 - 服务商登录、OpenAI 兼容 API 和模型选择
 - AI 回复完成通知和通知栏输入
-
-<p align="center">
-  <img src="./screenshot-desktop.jpg" width="360" alt="PIRT 与 aVNC 在 Android 分屏模式下同时运行">
-  <br>
-  <sub>PIRT 与 aVNC 分屏运行；同一桌面也可以通过浏览器 noVNC 打开。</sub>
-</p>
 
 ## 运行要求
 
