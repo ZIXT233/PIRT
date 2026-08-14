@@ -4,9 +4,9 @@
 
 English · [简体中文](README.zh-CN.md)
 
-PIRT gives your Android phone a local Linux environment that an AI Agent can actually use: run commands, work with files, use development tools and operate an XFCE desktop.
+PIRT integrates Pi as its native Agent runtime instead of wrapping its command-line interface. The Android app directly provides conversation and session management, history recovery, provider and model configuration, context usage, Pi commands and extensions.
 
-Everything runs on the phone. Pi works inside Debian on PRoot, while PIRT connects the Agent runtime, Android app lifecycle, shell, desktop and persistent `/workspace` into one system. Workspace files are also directly available to Android's system file manager and other apps.
+It also gives that Agent a local Linux computer it can actually use. Everything runs on the phone: Pi works inside Debian on PRoot, while PIRT connects the Agent runtime, Android app lifecycle, shell, desktop and persistent `/workspace` into one system. Workspace files are directly available to Android's system file manager and other apps.
 
 [Download the latest APK](https://github.com/ZIXT233/PIRT/releases/latest)
 
@@ -24,7 +24,6 @@ Everything runs on the phone. Pi works inside Debian on PRoot, while PIRT connec
 - Exposes that workspace to Android's Storage Access Framework, so system file managers and compatible apps can use the original files directly.
 - Runs independent background processes that are not tied to a conversation. They can host long-running tasks such as a Minecraft server, and can be viewed or stopped from PIRT's process list.
 - Uses an optional floating overlay to keep the local runtime active when Android would otherwise freeze it in the background.
-- Keeps Pi's real session history and can resume previous conversations.
 
 The practical difference is where the work happens. A remote-agent workflow needs another machine and a way to transfer or synchronize its files. PIRT executes on the phone and keeps the working files there.
 
