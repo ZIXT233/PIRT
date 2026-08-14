@@ -56,13 +56,8 @@ class PRootRuntime(context: Context) {
         if (!File(paths.rootfs, "bin/bash").isFile) {
             return RuntimeState.NotInstalled("本地开发环境尚未安装")
         }
-        val installedVersion = File(paths.rootfs, ".pirt-rootfs-version")
-            .takeIf(File::isFile)
-            ?.readText()
-            ?.trim()
-        if (installedVersion != RuntimeArtifacts.debianArm64.version) {
-            return RuntimeState.NotInstalled("本地开发环境需要更新")
-        }
+        // The packaged rootfs is an initial environment, not an app-managed image.
+        // APK upgrades must never replace a user's writable Linux installation.
         if (!prepareSupportFiles()) {
             return RuntimeState.NotInstalled("Could not prepare Pi runtime support files")
         }
@@ -200,15 +195,23 @@ class PRootRuntime(context: Context) {
             dbus-run-session -- /bin/bash -c '
               startxfce4 &
               xfce_pid=${'$'}!
-              marker=/root/.config/pirt/wallpaper-v1-applied
+              marker=/root/.config/pirt/wallpaper-v2-applied
               if [ ! -e "${'$'}marker" ]; then
                 wallpaper=/usr/local/share/pirt/pirt-wallpaper.png
                 for attempt in ${'$'}(seq 1 50); do
                   properties=${'$'}(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep "/last-image${'$'}" || true)
-                  if [ -n "${'$'}properties" ]; then
-                    while IFS= read -r property; do
-                      xfconf-query -c xfce4-desktop -p "${'$'}property" -s "${'$'}wallpaper"
-                    done <<< "${'$'}properties"
+                  if [ -z "${'$'}properties" ]; then
+                    monitor=${'$'}(xrandr --query 2>/dev/null | awk "/ connected/{print \${'$'}1; exit}")
+                    [ -n "${'$'}monitor" ] || monitor=VNC-0
+                    properties=/backdrop/screen0/monitor${'$'}monitor/workspace0/last-image
+                  fi
+                  applied=false
+                  while IFS= read -r property; do
+                    if [ -n "${'$'}property" ] && { xfconf-query -c xfce4-desktop -p "${'$'}property" -s "${'$'}wallpaper" 2>/dev/null || xfconf-query -c xfce4-desktop -p "${'$'}property" -n -t string -s "${'$'}wallpaper" 2>/dev/null; }; then
+                      applied=true
+                    fi
+                  done <<< "${'$'}properties"
+                  if ${'$'}applied; then
                     mkdir -p "${'$'}(dirname "${'$'}marker")"
                     touch "${'$'}marker"
                     break

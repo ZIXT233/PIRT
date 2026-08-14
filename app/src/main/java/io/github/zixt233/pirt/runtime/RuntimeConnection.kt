@@ -96,10 +96,15 @@ class RuntimeConnection(context: Context) : AutoCloseable {
     }
 
     @Synchronized
-    override fun close() {
+    fun disconnect() {
         if (bound) appContext.unbindService(connection)
         bound = false
         binder.value = null
+    }
+
+    @Synchronized
+    override fun close() {
+        disconnect()
         scope.cancel()
     }
 }

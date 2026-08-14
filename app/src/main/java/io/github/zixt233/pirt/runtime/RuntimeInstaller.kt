@@ -243,7 +243,8 @@ class RuntimeInstaller(private val context: Context, private val paths: RuntimeP
         onProgress: (readBytes: Long, totalBytes: Long) -> Unit = { _, _ -> },
         onEntry: (path: String) -> Unit = {},
     ) {
-        val deferredHardLinks = mutableListOf<Pair<File, File>>()
+        data class DeferredHardLink(val link: File, val target: File, val mode: Int)
+        val deferredHardLinks = mutableListOf<DeferredHardLink>()
         val directoryModes = mutableListOf<Pair<File, Int>>()
         val totalBytes = archive.length()
         var lastReported = 0L
@@ -267,7 +268,11 @@ class RuntimeInstaller(private val context: Context, private val paths: RuntimeP
                                 directoryModes += output to entry.mode
                             }
                             entry.isSymbolicLink -> createSymlink(output, entry.linkName)
-                            entry.isLink -> deferredHardLinks += output to safeEntryFile(destination, entry.linkName)
+                            entry.isLink -> deferredHardLinks += DeferredHardLink(
+                                output,
+                                safeEntryFile(destination, entry.linkName),
+                                entry.mode,
+                            )
                             entry.isFile -> writeRegularFile(tar, entry, output)
                         }
                     }
@@ -275,7 +280,7 @@ class RuntimeInstaller(private val context: Context, private val paths: RuntimeP
             }
             onProgress(totalBytes, totalBytes)
         }
-        deferredHardLinks.forEach { (link, target) ->
+        deferredHardLinks.forEach { (link, target, mode) ->
             link.parentFile?.mkdirsChecked()
             prepareArchiveOutput(link)
             checkResolvedPathInside(staging, target)
@@ -289,6 +294,9 @@ class RuntimeInstaller(private val context: Context, private val paths: RuntimeP
                     else -> error("Hard-link target is unavailable: ${target.absolutePath}")
                 }
             }
+            // Some Android filesystems reject hard links inside app-private storage.
+            // copyTo() then creates a 0600 file, so always restore the archive mode.
+            runCatching { Os.chmod(link.absolutePath, mode and 0xfff) }
         }
         directoryModes.asReversed().forEach { (directory, mode) ->
             runCatching { Os.chmod(directory.absolutePath, mode and 0xfff) }

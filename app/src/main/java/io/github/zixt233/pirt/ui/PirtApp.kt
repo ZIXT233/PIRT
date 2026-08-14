@@ -195,6 +195,7 @@ import java.text.DateFormat
 import java.util.Date
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -218,6 +219,7 @@ fun PirtApp() {
     var installState by remember { mutableStateOf<InstallState>(InstallState.Idle) }
     var installLogs by remember { mutableStateOf(listOf<String>()) }
     var installAttempt by remember { mutableIntStateOf(0) }
+    var replaceInitialEnvironment by remember { mutableStateOf(false) }
     var pageName by rememberSaveable { mutableStateOf(Page.CHAT.name) }
     val uiPrefs = remember { context.getSharedPreferences("pirt_ui", Context.MODE_PRIVATE) }
     var onboardingDone by rememberSaveable {
@@ -269,14 +271,20 @@ fun PirtApp() {
     }
 
     LaunchedEffect(installAttempt) {
-        runtimeState = runtime.state()
-        if (runtimeState !is RuntimeState.Ready) {
+        val detectedState = runtime.state()
+        runtimeState = if (replaceInitialEnvironment) {
+            RuntimeState.NotInstalled("正在替换本地初始环境")
+        } else {
+            detectedState
+        }
+        if (replaceInitialEnvironment || detectedState !is RuntimeState.Ready) {
             installLogs = emptyList()
             installer.install(
                 onState = { next ->
                     mainHandler.post {
                         installState = next
                         if (next is InstallState.Complete) {
+                            replaceInitialEnvironment = false
                             runtimeState = runtime.state()
                             if (runtimeState is RuntimeState.NotInstalled) {
                                 installState = InstallState.Failed((runtimeState as RuntimeState.NotInstalled).reason)
@@ -523,6 +531,18 @@ fun PirtApp() {
                         focusOverlayToken = settingsFocusOverlayToken,
                         onModelSelected = {
                             if (!onboardingDone) finishOnboarding()
+                        },
+                        onReplaceInitialEnvironment = {
+                            appViewModel.runtimeConnection.disconnect()
+                            RuntimeService.stopAll(context)
+                            scope.launch {
+                                delay(500)
+                                installLogs = emptyList()
+                                installState = InstallState.Idle
+                                replaceInitialEnvironment = true
+                                runtimeState = RuntimeState.NotInstalled("正在替换本地初始环境")
+                                installAttempt += 1
+                            }
                         },
                         onSkip = { finishOnboarding() },
                     )

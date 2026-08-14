@@ -263,6 +263,12 @@ class RuntimeService : Service() {
             )
         }
 
+        fun stopAll(context: Context) {
+            context.startService(
+                Intent(context, RuntimeService::class.java).setAction(ACTION_STOP_ALL),
+            )
+        }
+
         internal fun refreshNotification() = instance?.run {
             createChannel()
             overlay.detach()
