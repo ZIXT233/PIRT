@@ -4,7 +4,7 @@
 
 [English](README.md) · 简体中文
 
-PIRT 是一款内置完整本地 Linux PRoot 环境的掌上 AI Agent。
+PIRT 让你**直接通过 AI Agent 在 Android 手机上执行命令、处理文件、开发项目，并使用完整的 Linux 桌面。**
 
 PIRT 深度集成 Pi SDK，为 Pi 会话提供移动端原生的交互体验。Pi 运行在其中的 Debian 环境里，并与 Shell、桌面、Android 系统文件管理器和其他应用共享持久化的 `/workspace`。
 
